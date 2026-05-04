@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 11px; color: #1a1a2e; background: #fff; }
+  .page { width: 210mm; min-height: 297mm; padding: 20mm 18mm; }
+
+  /* Header */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1a3a6e; padding-bottom: 12px; margin-bottom: 20px; }
+  .logo-block .company { font-size: 22px; font-weight: 900; color: #1a3a6e; letter-spacing: 1px; }
+  .logo-block .tagline { font-size: 9px; color: #666; margin-top: 2px; letter-spacing: 2px; text-transform: uppercase; }
+  .doc-title-block { text-align: right; }
+  .doc-title-block .doc-type { font-size: 14px; font-weight: 700; color: #1a3a6e; text-transform: uppercase; }
+  .doc-title-block .doc-ref { font-size: 10px; color: #666; margin-top: 4px; }
+  .doc-title-block .doc-date { font-size: 10px; color: #666; }
+
+  /* Validity banner */
+  .validity-banner { background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 8px 12px; margin-bottom: 18px; font-size: 10px; color: #856404; text-align: center; font-weight: 600; }
+
+  /* Client / vehicle block */
+  .two-col { display: flex; gap: 16px; margin-bottom: 16px; }
+  .box { flex: 1; border: 1px solid #dde; border-radius: 6px; padding: 12px; }
+  .box-title { font-size: 8px; text-transform: uppercase; letter-spacing: 2px; color: #1a3a6e; font-weight: 700; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+  .field-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dotted #f0f0f0; }
+  .field-row:last-child { border-bottom: none; }
+  .field-label { color: #888; }
+  .field-value { font-weight: 600; color: #1a1a2e; text-align: right; }
+
+  /* Vehicle highlight */
+  .vehicle-highlight { background: #f0f4ff; border: 2px solid #1a3a6e; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; }
+  .vehicle-highlight .veh-name { font-size: 16px; font-weight: 900; color: #1a3a6e; margin-bottom: 6px; }
+  .vehicle-highlight .veh-specs { display: flex; gap: 20px; flex-wrap: wrap; }
+  .veh-spec { font-size: 10px; color: #444; }
+  .veh-spec span { font-weight: 700; color: #1a3a6e; }
+
+  /* Price table */
+  .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1a3a6e; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1a3a6e; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  table th { background: #1a3a6e; color: #fff; padding: 7px 10px; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; text-align: left; }
+  table td { padding: 6px 10px; border-bottom: 1px solid #eee; font-size: 10px; }
+  table tr:nth-child(even) td { background: #f8f9ff; }
+  .amount { text-align: right; font-family: 'Courier New', monospace; font-weight: 600; }
+  .subtotal td { background: #e8edf8 !important; font-weight: 700; }
+  .total-row td { background: #1a3a6e !important; color: #fff !important; font-size: 12px; font-weight: 900; }
+  .total-row .amount { color: #ffd700 !important; font-size: 13px; }
+
+  /* Formule blocks */
+  .formule-grid { display: flex; gap: 10px; margin-bottom: 16px; }
+  .formule-card { flex: 1; border: 2px solid #dde; border-radius: 6px; padding: 10px; text-align: center; }
+  .formule-card.selected { border-color: #1a3a6e; background: #f0f4ff; }
+  .formule-name { font-weight: 700; font-size: 11px; color: #1a3a6e; margin-bottom: 4px; }
+  .formule-desc { font-size: 9px; color: #666; }
+  .formule-check { font-size: 14px; margin-top: 4px; }
+
+  /* Payment schedule */
+  .payment-grid { display: flex; gap: 10px; margin-bottom: 16px; }
+  .payment-step { flex: 1; border-radius: 6px; padding: 10px; text-align: center; }
+  .payment-step.s1 { background: #e8f4e8; border: 1px solid #4caf50; }
+  .payment-step.s2 { background: #fff3cd; border: 1px solid #ffc107; }
+  .payment-step.s3 { background: #e3f2fd; border: 1px solid #2196f3; }
+  .payment-step .step-num { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #555; margin-bottom: 3px; }
+  .payment-step .step-label { font-size: 9px; color: #666; margin-bottom: 4px; }
+  .payment-step .step-amount { font-size: 13px; font-weight: 900; color: #1a1a2e; font-family: 'Courier New', monospace; }
+  .payment-step .step-trigger { font-size: 8px; color: #888; margin-top: 3px; font-style: italic; }
+
+  /* Disclaimer */
+  .disclaimer { background: #fff5f5; border: 1px solid #ffcccc; border-radius: 4px; padding: 8px 12px; margin: 14px 0; font-size: 9px; color: #c0392b; }
+
+  /* Footer */
+  .footer { margin-top: 20px; padding-top: 12px; border-top: 1px solid #dde; display: flex; justify-content: space-between; font-size: 9px; color: #999; }
+
+  /* Signature block */
+  .sig-block { margin-top: 20px; border: 1px solid #dde; border-radius: 6px; padding: 14px; }
+  .sig-grid { display: flex; gap: 20px; }
+  .sig-item { flex: 1; text-align: center; }
+  .sig-line { border-bottom: 1px solid #888; margin: 30px 0 6px; }
+  .sig-label { font-size: 9px; color: #666; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-block">
+      <div class="company">DJAZAIR AUTO</div>
+      <div class="tagline">Import automobile Algérie • Véhicules neufs GCC</div>
+    </div>
+    <div class="doc-title-block">
+      <div class="doc-type">Devis d'importation</div>
+      <div class="doc-ref">N° {d.reference_dossier}</div>
+      <div class="doc-date">Émis le {d.date_devis}</div>
+    </div>
+  </div>
+
+  <!-- VALIDITY -->
+  <div class="validity-banner">
+    ⚠️ Ce devis est valable 72 heures à compter de sa date d'émission. Prix exprimés en dinars algériens (DA).
+  </div>
+
+  <!-- CLIENT + VEHICLE INFO -->
+  <div class="two-col">
+    <div class="box">
+      <div class="box-title">Client</div>
+      <div class="field-row"><span class="field-label">Nom complet</span><span class="field-value">{d.prenom} {d.nom}</span></div>
+      <div class="field-row"><span class="field-label">Téléphone</span><span class="field-value">{d.telephone}</span></div>
+      <div class="field-row"><span class="field-label">Email</span><span class="field-value">{d.email}</span></div>
+      <div class="field-row"><span class="field-label">Wilaya</span><span class="field-value">{d.wilaya}</span></div>
+      <div class="field-row"><span class="field-label">Commune</span><span class="field-value">{d.commune}</span></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Notaire séquestre</div>
+      <div class="field-row"><span class="field-label">Étude</span><span class="field-value">{d.nom_notaire}</span></div>
+      <div class="field-row"><span class="field-label">Zone</span><span class="field-value">{d.zone_notaire}</span></div>
+      <div class="field-row"><span class="field-label">Adresse</span><span class="field-value">{d.adresse_notaire}</span></div>
+      <div class="field-row"><span class="field-label">Frais notaire</span><span class="field-value">{d.frais_notaire} DA</span></div>
+    </div>
+  </div>
+
+  <!-- VEHICLE HIGHLIGHT -->
+  <div class="vehicle-highlight">
+    <div class="veh-name">{d.marque} {d.modele} — {d.finition}</div>
+    <div class="veh-specs">
+      <div class="veh-spec">Année <span>{d.annee}</span></div>
+      <div class="veh-spec">Boîte <span>{d.boite_vitesse}</span></div>
+      <div class="veh-spec">Couleur <span>{d.couleur_1}</span></div>
+      <div class="veh-spec">Origine <span>{d.pays_origine}</span></div>
+      <div class="veh-spec">Réf. <span>{d.reference_variante}</span></div>
+    </div>
+  </div>
+
+  <!-- PRICE BREAKDOWN -->
+  <div class="section-title">Détail des coûts</div>
+  <table>
+    <tr><th>Poste</th><th style="text-align:right">Montant</th></tr>
+    <tr><td>Prix du véhicule (USD → DA)</td><td class="amount">{d.prix_vehicule_da} DA</td></tr>
+    <tr><td>Transport maritime + assurance (CIF)</td><td class="amount">{d.cif_da} DA</td></tr>
+    <tr class="subtotal"><td>Sous-total livré au port d'Alger</td><td class="amount">{d.sous_total_da} DA</td></tr>
+    <tr><td>Droits de douane ({d.taux_douane}%)</td><td class="amount">{d.droits_douane_da} DA</td></tr>
+    <tr><td>Frais de dédouanement et dégroupage</td><td class="amount">{d.cout_degroupage_da} DA</td></tr>
+    <tr><td>Frais de transitaire</td><td class="amount">{d.cout_transitaire_da} DA</td></tr>
+    <tr><td>Supplément dédouanement</td><td class="amount">{d.supplement_dedouane_da} DA</td></tr>
+    <tr class="subtotal"><td>Total dédouané</td><td class="amount">{d.total_dedouane_da} DA</td></tr>
+    <tr><td>Commission Djazair Auto ({d.taux_commission}%)</td><td class="amount">{d.commission_da} DA</td></tr>
+    <tr><td>Frais notariaux (séquestre)</td><td class="amount">{d.frais_notaire} DA</td></tr>
+    <tr class="total-row"><td><strong>TOTAL À RÉGLER</strong></td><td class="amount"><strong>{d.total_ttc_da} DA</strong></td></tr>
+  </table>
+
+  <!-- PAYMENT SCHEDULE -->
+  <div class="section-title">Échéancier de paiement</div>
+  <div class="payment-grid">
+    <div class="payment-step s1">
+      <div class="step-num">Étape 1 — Maintenant</div>
+      <div class="step-label">Frais notaire (séquestre)</div>
+      <div class="step-amount">{d.frais_notaire} DA</div>
+      <div class="step-trigger">Versement immédiat chez le notaire</div>
+    </div>
+    <div class="payment-step s2">
+      <div class="step-num">Étape 2 — Embarquement</div>
+      <div class="step-label">Versement 70% sourceur</div>
+      <div class="step-amount">{d.montant_70_sourceur} DA</div>
+      <div class="step-trigger">Sur validation des 5 documents</div>
+    </div>
+    <div class="payment-step s3">
+      <div class="step-num">Étape 3 — Arrivée port</div>
+      <div class="step-label">Solde 30% + commission</div>
+      <div class="step-amount">{d.montant_30_total} DA</div>
+      <div class="step-trigger">Sur confirmation arrivée navire</div>
+    </div>
+  </div>
+
+  <!-- FORMULE -->
+  <div class="section-title">Formule sélectionnée</div>
+  <div class="formule-grid">
+    <div class="formule-card {d.formule_standard_class}">
+      <div class="formule-name">STANDARD</div>
+      <div class="formule-desc">Véhicule livré au port d'Alger</div>
+      <div class="formule-check">{d.formule_standard_check}</div>
+    </div>
+    <div class="formule-card {d.formule_domicile_class}">
+      <div class="formule-name">DOMICILE</div>
+      <div class="formule-desc">Livraison à votre adresse</div>
+      <div class="formule-check">{d.formule_domicile_check}</div>
+    </div>
+    <div class="formule-card {d.formule_cle_class}">
+      <div class="formule-name">CLÉ EN MAIN</div>
+      <div class="formule-desc">Dédouanement + carte grise inclus</div>
+      <div class="formule-check">{d.formule_cle_check}</div>
+    </div>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
+    <strong>Important :</strong> Ce devis est établi sur la base d'un taux de change de {d.taux_conversion} DA/USD en vigueur au {d.date_devis}.
+    Le montant final peut varier légèrement en fonction du taux applicable à la date du contrat.
+    Délai de livraison estimé : {d.delai_min}–{d.delai_max} jours à compter de la confirmation de commande.
+  </div>
+
+  <!-- SIGNATURE AREA -->
+  <div class="sig-block">
+    <div class="box-title" style="margin-bottom:12px">Acceptation du devis</div>
+    <div class="sig-grid">
+      <div class="sig-item">
+        <div class="sig-line"></div>
+        <div class="sig-label">Le Client — {d.prenom} {d.nom}</div>
+        <div class="sig-label" style="margin-top:3px">Date : _______________</div>
+      </div>
+      <div class="sig-item">
+        <div class="sig-line"></div>
+        <div class="sig-label">Pour Djazair Auto</div>
+        <div class="sig-label" style="margin-top:3px">Date : _______________</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>Djazair Auto — Import automobile Algérie</span>
+    <span>contact@djazairauto.com</span>
+    <span>Réf. {d.reference_dossier} — {d.date_devis}</span>
+  </div>
+
+</div>
+</body>
+</html>
