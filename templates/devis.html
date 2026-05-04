@@ -46,14 +46,6 @@
   .total-row td { background: #1a3a6e !important; color: #fff !important; font-size: 12px; font-weight: 900; }
   .total-row .amount { color: #ffd700 !important; font-size: 13px; }
 
-  /* Formule blocks */
-  .formule-grid { display: flex; gap: 10px; margin-bottom: 16px; }
-  .formule-card { flex: 1; border: 2px solid #dde; border-radius: 6px; padding: 10px; text-align: center; }
-  .formule-card.selected { border-color: #1a3a6e; background: #f0f4ff; }
-  .formule-name { font-weight: 700; font-size: 11px; color: #1a3a6e; margin-bottom: 4px; }
-  .formule-desc { font-size: 9px; color: #666; }
-  .formule-check { font-size: 14px; margin-top: 4px; }
-
   /* Payment schedule */
   .payment-grid { display: flex; gap: 10px; margin-bottom: 16px; }
   .payment-step { flex: 1; border-radius: 6px; padding: 10px; text-align: center; }
@@ -168,26 +160,6 @@
       <div class="step-label">Solde 30% + commission</div>
       <div class="step-amount">{d.montant_30_total} DA</div>
       <div class="step-trigger">Sur confirmation arrivée navire</div>
-    </div>
-  </div>
-
-  <!-- FORMULE -->
-  <div class="section-title">Formule sélectionnée</div>
-  <div class="formule-grid">
-    <div class="formule-card {d.formule_standard_class}">
-      <div class="formule-name">STANDARD</div>
-      <div class="formule-desc">Véhicule livré au port d'Alger</div>
-      <div class="formule-check">{d.formule_standard_check}</div>
-    </div>
-    <div class="formule-card {d.formule_domicile_class}">
-      <div class="formule-name">DOMICILE</div>
-      <div class="formule-desc">Livraison à votre adresse</div>
-      <div class="formule-check">{d.formule_domicile_check}</div>
-    </div>
-    <div class="formule-card {d.formule_cle_class}">
-      <div class="formule-name">CLÉ EN MAIN</div>
-      <div class="formule-desc">Dédouanement + carte grise inclus</div>
-      <div class="formule-check">{d.formule_cle_check}</div>
     </div>
   </div>
 
