@@ -27,7 +27,7 @@
       "version": 2,
       "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "CATALOGUE" },
       "mapper": {
-        "filterByFormula": "AND({reference}=\"{{1.body.list_reply.id}}\",{actif}=TRUE())",
+        "filterByFormula": "AND({reference}=\"{{1.body.list_reply.id}}\",{actif}=1)",
         "maxRecords": 1
       },
       "metadata": { "designer": { "x": 300, "y": 150 } }
@@ -163,7 +163,7 @@
               "mapper": {
                 "id": "{{2.records[1].id}}",
                 "fields": {
-                  "variante_choisie": "{{1.body.list_reply.id}}",
+                  "reference_variante": "{{1.body.list_reply.id}}",
                   "boite_vitesse": "{{1.body.button_reply.id}}",
                   "etape_qualification": "PRENOM",
                   "statut": "EN_QUALIFICATION"
@@ -322,7 +322,7 @@
                   "messages": [
                     {
                       "role": "user",
-                      "content": "Normalise ce nom de commune algérienne en code standard. Réponds UNIQUEMENT en JSON pur: {\"commune_normalisee\":\"...\",\"wilaya\":\"...\",\"zone_alger\":\"EST_CENTRE|OUEST|null\"}\nEntrée: {{1.body.text}}"
+                      "content": "Normalise ce nom de commune algérienne en code standard. Réponds UNIQUEMENT en JSON pur: {\"commune_normalisee\":\"...\",\"wilaya\":\"...\",\"zone_notaire\":\"EST_CENTRE|OUEST|null\"}\nEntrée: {{1.body.text}}"
                     }
                   ]
                 }
@@ -343,7 +343,7 @@
               "version": 2,
               "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
               "mapper": {
-                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{20.commune_normalisee}}\",{zone_alger}=\"{{20.zone_alger}}\"))",
+                "filterByFormula": "AND({actif}=1,OR({commune}=\"{{20.commune_normalisee}}\",{zone_notaire}=\"{{20.zone_notaire}}\"))",
                 "maxRecords": 2
               },
               "metadata": { "designer": { "x": 3300, "y": 400 } }
@@ -358,7 +358,7 @@
                 "fields": {
                   "commune": "{{20.commune_normalisee}}",
                   "wilaya": "{{20.wilaya}}",
-                  "zone_alger": "{{20.zone_alger}}",
+                  "zone_notaire": "{{20.zone_notaire}}",
                   "etape_qualification": "FORMULE"
                 }
               },
@@ -438,7 +438,7 @@
               "mapper": {
                 "id": "{{2.records[1].id}}",
                 "fields": {
-                  "formule_choisie": "{{1.body.button_reply.id}}",
+                  "formule": "{{1.body.button_reply.id}}",
                   "statut": "DEVIS_ENVOYE",
                   "score_intention": 20,
                   "date_devis": "{{now}}"

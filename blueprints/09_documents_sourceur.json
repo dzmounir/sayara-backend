@@ -15,7 +15,7 @@
       "version": 2,
       "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "SOURCEURS" },
       "mapper": {
-        "filterByFormula": "AND({telephone}=\"{{1.body.from}}\",{actif}=TRUE())",
+        "filterByFormula": "AND({telephone}=\"{{1.body.from}}\",{actif}=1)",
         "maxRecords": 1
       },
       "metadata": { "designer": { "x": 300, "y": 0 } }
@@ -63,7 +63,7 @@
                         "body": {
                           "to": "{{1.body.from}}",
                           "type": "text",
-                          "text": "📋 *Dossier {{5.records[1].fields.reference_dossier}} identifié*\n\n🚗 {{5.records[1].fields.marque}} {{5.records[1].fields.modele}} — {{5.records[1].fields.variante_choisie}}\n👤 Client : {{5.records[1].fields.prenom}} {{5.records[1].fields.nom}}\n\nDocuments requis (5 obligatoires) :\n\n1️⃣ Facture d'achat\n2️⃣ Carte grise KSA\n3️⃣ Bill of Lading\n4️⃣ Certificat assurance maritime\n5️⃣ Photos du véhicule\n\n📩 Envoyez-les un par un dans cet ordre.\n*Étape en cours : {{5.records[1].fields.docs_etape_en_cours}}/5*"
+                          "text": "📋 *Dossier {{5.records[1].fields.reference_dossier}} identifié*\n\n🚗 {{5.records[1].fields.marque}} {{5.records[1].fields.modele}} — {{5.records[1].fields.reference_variante}}\n👤 Client : {{5.records[1].fields.prenom}} {{5.records[1].fields.nom}}\n\nDocuments requis (5 obligatoires) :\n\n1️⃣ Facture d'achat\n2️⃣ Carte grise KSA\n3️⃣ Bill of Lading\n4️⃣ Certificat assurance maritime\n5️⃣ Photos du véhicule\n\n📩 Envoyez-les un par un dans cet ordre.\n*Étape en cours : {{5.records[1].fields.docs_etape_en_cours}}/5*"
                         }
                       },
                       "metadata": { "designer": { "x": 1500, "y": -200 } }

@@ -44,7 +44,7 @@
               "version": 2,
               "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
               "mapper": {
-                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{4.value.fields.commune}}\",{zone_alger}=\"{{4.value.fields.zone_alger}}\"))",
+                "filterByFormula": "AND({actif}=1,OR({commune}=\"{{4.value.fields.commune}}\",{zone_notaire}=\"{{4.value.fields.zone_notaire}}\"))",
                 "maxRecords": 1
               },
               "metadata": { "designer": { "x": 1200, "y": -200 } }
@@ -61,7 +61,7 @@
                 "body": {
                   "to": "{{5.records[1].fields.whatsapp_notaire}}",
                   "type": "buttons",
-                  "text": "📋 *Dépôt J1 — Dossier {{4.value.fields.reference_dossier}}*\n\nMaître {{5.records[1].fields.nom_notaire}},\n\nUn client SAYARA va se présenter à votre étude pour le dépôt initial.\n\n👤 *Client :* {{4.value.fields.prenom}} {{4.value.fields.nom}}\n🚗 *Véhicule :* {{4.value.fields.marque}} {{4.value.fields.modele}} — {{4.value.fields.variante_choisie}}\n📋 *Réf :* {{4.value.fields.reference_dossier}}\n\n💰 *Montant à recevoir en dépôt :*\n*{{formatNumber(4.value.fields.total_livre_au_port; 0; ' ')}} DA*\n\nInstructions : créer une reconnaissance de dette selon le modèle SAYARA transmis.\n\nConfirmez-vous la prise en charge ?",
+                  "text": "📋 *Dépôt J1 — Dossier {{4.value.fields.reference_dossier}}*\n\nMaître {{5.records[1].fields.nom_notaire}},\n\nUn client SAYARA va se présenter à votre étude pour le dépôt initial.\n\n👤 *Client :* {{4.value.fields.prenom}} {{4.value.fields.nom}}\n🚗 *Véhicule :* {{4.value.fields.marque}} {{4.value.fields.modele}} — {{4.value.fields.reference_variante}}\n📋 *Réf :* {{4.value.fields.reference_dossier}}\n\n💰 *Montant à recevoir en dépôt :*\n*{{formatNumber(4.value.fields.total_livre_au_port; 0; ' ')}} DA*\n\nInstructions : créer une reconnaissance de dette selon le modèle SAYARA transmis.\n\nConfirmez-vous la prise en charge ?",
                   "buttons": [
                     { "id": "NOTAIRE_DEPOT_OK_{{4.value.fields.reference_dossier}}",    "title": "✅ Confirmé" },
                     { "id": "NOTAIRE_DEPOT_ALERT_{{4.value.fields.reference_dossier}}", "title": "⚠️ Problème" }
@@ -115,7 +115,7 @@
               "version": 2,
               "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
               "mapper": {
-                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{9.value.fields.commune}}\",{zone_alger}=\"{{9.value.fields.zone_alger}}\"))",
+                "filterByFormula": "AND({actif}=1,OR({commune}=\"{{9.value.fields.commune}}\",{zone_notaire}=\"{{9.value.fields.zone_notaire}}\"))",
                 "maxRecords": 1
               },
               "metadata": { "designer": { "x": 1200, "y": 0 } }
@@ -186,7 +186,7 @@
               "version": 2,
               "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
               "mapper": {
-                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{14.value.fields.commune}}\",{zone_alger}=\"{{14.value.fields.zone_alger}}\"))",
+                "filterByFormula": "AND({actif}=1,OR({commune}=\"{{14.value.fields.commune}}\",{zone_notaire}=\"{{14.value.fields.zone_notaire}}\"))",
                 "maxRecords": 1
               },
               "metadata": { "designer": { "x": 1200, "y": 200 } }
@@ -249,7 +249,7 @@
               "version": 2,
               "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
               "mapper": {
-                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{18.records[1].fields.commune}}\",{zone_alger}=\"{{18.records[1].fields.zone_alger}}\"))",
+                "filterByFormula": "AND({actif}=1,OR({commune}=\"{{18.records[1].fields.commune}}\",{zone_notaire}=\"{{18.records[1].fields.zone_notaire}}\"))",
                 "maxRecords": 1
               },
               "metadata": { "designer": { "x": 900, "y": 400 } }

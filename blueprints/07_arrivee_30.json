@@ -37,7 +37,7 @@
               "version": 2,
               "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
               "mapper": {
-                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{2.records[1].fields.commune}}\",{zone_alger}=\"{{2.records[1].fields.zone_alger}}\"))",
+                "filterByFormula": "AND({actif}=1,OR({commune}=\"{{2.records[1].fields.commune}}\",{zone_notaire}=\"{{2.records[1].fields.zone_notaire}}\"))",
                 "maxRecords": 1
               },
               "metadata": { "designer": { "x": 900, "y": 0 } }
@@ -69,7 +69,7 @@
                 "method": "POST",
                 "headers": [{ "name": "Content-Type", "value": "application/json" }],
                 "body": {
-                  "to": "{{2.records[1].fields.telephone}}",
+                  "to": "{{2.records[1].fields.whatsapp_pro}}",
                   "type": "text",
                   "text": "🎉 *Votre véhicule est arrivé au port d'Alger !*\n\nBonjour {{2.records[1].fields.prenom}},\n\nVotre *{{2.records[1].fields.marque}} {{2.records[1].fields.modele}}* est bien arrivé au port d'Alger. 🇩🇿\n\n📦 N° conteneur : {{2.records[1].fields.numero_conteneur}}\n\nNous vous tiendrons informé des étapes de dédouanement. Notre équipe prend en charge toutes les démarches.\n\nMerci pour votre confiance ! 🙏"
                 }

@@ -51,10 +51,10 @@
                     "marque":               "{{2.records[1].fields.marque}}",
                     "modele":               "{{2.records[1].fields.modele}}",
                     "annee":                "{{2.records[1].fields.annee}}",
-                    "finition":             "{{2.records[1].fields.variante_choisie}}",
+                    "finition":             "{{2.records[1].fields.reference_variante}}",
                     "boite_vitesse":        "{{2.records[1].fields.boite_vitesse}}",
-                    "couleur_1":            "{{2.records[1].fields.couleur_choisie}}",
-                    "formule_choisie":      "{{2.records[1].fields.formule_choisie}}",
+                    "couleur_1":            "{{2.records[1].fields.couleur_1}}",
+                    "formule":      "{{2.records[1].fields.formule}}",
                     "montant_total":        "{{2.records[1].fields.total_livre_au_port}}",
                     "frais_retractation":   150000,
                     "date_contrat":         "{{formatDate(now; \"DD/MM/YYYY\")}}"
@@ -148,7 +148,7 @@
               "version": 2,
               "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
               "mapper": {
-                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{2.records[1].fields.commune}}\",{zone_alger}=\"{{2.records[1].fields.zone_alger}}\"))",
+                "filterByFormula": "AND({actif}=1,OR({commune}=\"{{2.records[1].fields.commune}}\",{zone_notaire}=\"{{2.records[1].fields.zone_notaire}}\"))",
                 "maxRecords": 1
               },
               "metadata": { "designer": { "x": 1200, "y": 100 } }
@@ -213,7 +213,7 @@
                 "body": {
                   "to": "{{COURTIER_WHATSAPP}}",
                   "type": "text",
-                  "text": "✅ *Nouveau contrat signé !*\n\n📋 Dossier : {{2.records[1].fields.reference_dossier}}\n👤 Client : {{2.records[1].fields.prenom}} {{2.records[1].fields.nom}}\n📞 Tel : {{1.body.from}}\n🚗 Véhicule : {{2.records[1].fields.variante_choisie}}\n💰 Montant : {{formatNumber(2.records[1].fields.total_livre_au_port; 0; \" \")}} DA\n📍 Notaire : {{9.records[1].fields.nom_notaire}}"
+                  "text": "✅ *Nouveau contrat signé !*\n\n📋 Dossier : {{2.records[1].fields.reference_dossier}}\n👤 Client : {{2.records[1].fields.prenom}} {{2.records[1].fields.nom}}\n📞 Tel : {{1.body.from}}\n🚗 Véhicule : {{2.records[1].fields.reference_variante}}\n💰 Montant : {{formatNumber(2.records[1].fields.total_livre_au_port; 0; \" \")}} DA\n📍 Notaire : {{9.records[1].fields.nom_notaire}}"
                 }
               },
               "metadata": { "designer": { "x": 2100, "y": 100 } }

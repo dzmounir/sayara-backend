@@ -79,7 +79,7 @@
                       "version": 2,
                       "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
                       "mapper": {
-                        "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{1.fields.commune}}\",{zone_alger}=\"{{1.fields.zone_alger}}\"))",
+                        "filterByFormula": "AND({actif}=1,OR({commune}=\"{{1.fields.commune}}\",{zone_notaire}=\"{{1.fields.zone_notaire}}\"))",
                         "maxRecords": 1
                       },
                       "metadata": { "designer": { "x": 1200, "y": 0 } }
@@ -96,7 +96,7 @@
                         "body": {
                           "to": "{{6.records[1].fields.whatsapp_notaire}}",
                           "type": "text",
-                          "text": "🚢 *Libération 70% — Dossier {{1.fields.reference_dossier}}*\n\nMaître {{6.records[1].fields.nom_notaire}},\n\nLes documents d'embarquement du véhicule ci-dessous ont été validés.\n\n🚗 {{1.fields.marque}} {{1.fields.modele}} — {{1.fields.variante_choisie}}\n👤 Client : {{1.fields.prenom}} {{1.fields.nom}}\n\n💰 *Montant à libérer (70%) :*\n• Au sourceur : {{formatNumber(1.fields.montant_70_sourceur; 0; \" \")}} DA\n• Commission SAYARA : {{formatNumber(1.fields.commission_da; 0; \" \")}} DA\n• *TOTAL : {{formatNumber(1.fields.montant_70_total; 0; \" \")}} DA*\n\nMerci de confirmer la libération de ces fonds."
+                          "text": "🚢 *Libération 70% — Dossier {{1.fields.reference_dossier}}*\n\nMaître {{6.records[1].fields.nom_notaire}},\n\nLes documents d'embarquement du véhicule ci-dessous ont été validés.\n\n🚗 {{1.fields.marque}} {{1.fields.modele}} — {{1.fields.reference_variante}}\n👤 Client : {{1.fields.prenom}} {{1.fields.nom}}\n\n💰 *Montant à libérer (70%) :*\n• Au sourceur : {{formatNumber(1.fields.montant_70_sourceur; 0; \" \")}} DA\n• Commission SAYARA : {{formatNumber(1.fields.commission_da; 0; \" \")}} DA\n• *TOTAL : {{formatNumber(1.fields.montant_70_total; 0; \" \")}} DA*\n\nMerci de confirmer la libération de ces fonds."
                         }
                       },
                       "metadata": { "designer": { "x": 1500, "y": 0 } }
@@ -111,7 +111,7 @@
                         "method": "POST",
                         "headers": [{ "name": "Content-Type", "value": "application/json" }],
                         "body": {
-                          "to": "{{1.fields.telephone}}",
+                          "to": "{{1.fields.whatsapp_pro}}",
                           "type": "text",
                           "text": "🚢 *Votre véhicule est embarqué !*\n\nBonne nouvelle {{1.fields.prenom}}, votre *{{1.fields.marque}} {{1.fields.modele}}* a bien été chargé sur le navire.\n\n🌍 Pays d'origine : {{1.fields.pays_origine}}\n⚓ Port de départ : {{1.fields.port_embarquement}}\n\nSuivez votre véhicule en temps réel :\n🔗 https://www.marinetraffic.com/en/ais/home/centerx:2.2/centery:36.7\n\nNous vous préviendrons dès l'arrivée au port d'Alger. 🇩🇿"
                         }

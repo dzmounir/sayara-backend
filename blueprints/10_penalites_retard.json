@@ -20,7 +20,7 @@
       "mapper": {
         "filterByFormula": "AND({statut}=\"VEHICULE_ACHETE\",{docs_embarquement_complets}=FALSE(),{date_confirmation_commande}!=\"\")",
         "maxRecords": 100,
-        "fields": "[\"reference_dossier\",\"date_confirmation_commande\",\"telephone\",\"prenom\",\"nom\",\"telephone_sourceur\",\"nom_sourceur\",\"sourceur_assigne\",\"prix_vehicule_affiche\",\"variante_choisie\",\"marque\",\"modele\",\"penalites_sourceur_da\",\"boite_vitesse\",\"couleur_choisie\"]"
+        "fields": "[\"reference_dossier\",\"date_confirmation_commande\",\"telephone\",\"prenom\",\"nom\",\"telephone_sourceur\",\"nom_sourceur\",\"sourceur_assigne\",\"prix_vehicule_affiche\",\"reference_variante\",\"marque\",\"modele\",\"penalites_sourceur_da\",\"boite_vitesse\",\"couleur_1\"]"
       },
       "metadata": { "designer": { "x": 300, "y": 0 } }
     },
@@ -73,7 +73,7 @@
                 "body": {
                   "to": "{{3.value.fields.telephone_sourceur}}",
                   "type": "text",
-                  "text": "👋 Bonjour,\n\nNous souhaitions faire le point sur le dossier *{{3.value.fields.reference_dossier}}*.\n\n🚗 {{3.value.fields.marque}} {{3.value.fields.modele}} — {{3.value.fields.variante_choisie}}\n\nPourriez-vous nous communiquer une date prévisionnelle d'envoi des documents d'embarquement ?\n\nMerci 🙏"
+                  "text": "👋 Bonjour,\n\nNous souhaitions faire le point sur le dossier *{{3.value.fields.reference_dossier}}*.\n\n🚗 {{3.value.fields.marque}} {{3.value.fields.modele}} — {{3.value.fields.reference_variante}}\n\nPourriez-vous nous communiquer une date prévisionnelle d'envoi des documents d'embarquement ?\n\nMerci 🙏"
                 }
               },
               "metadata": { "designer": { "x": 1500, "y": -400 } }
@@ -145,7 +145,7 @@
               "version": 2,
               "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "PRIX_SOURCEURS" },
               "mapper": {
-                "filterByFormula": "AND({modele}=\"{{3.value.fields.modele}}\",{finition}=\"{{3.value.fields.variante_choisie}}\",{stock}>0,{actif}=TRUE(),{sourceur_id}!=\"{{3.value.fields.sourceur_assigne}}\")",
+                "filterByFormula": "AND({modele}=\"{{3.value.fields.modele}}\",{finition}=\"{{3.value.fields.reference_variante}}\",{stock}>0,{actif}=1,{sourceur_id}!=\"{{3.value.fields.sourceur_assigne}}\")",
                 "maxRecords": 5,
                 "sort": "[{\"field\":\"prix_vehicule_usd\",\"direction\":\"asc\"}]",
                 "fields": "[\"sourceur_id\",\"telephone_sourceur\",\"prix_vehicule_usd\",\"cif_shipping_sourceur_usd\"]"
@@ -172,7 +172,7 @@
                 "body": {
                   "to": "{{10.value.fields.telephone_sourceur}}",
                   "type": "buttons",
-                  "text": "🚨 *APPEL D'OFFRES URGENT — SAYARA*\n\nNous recherchons en urgence :\n\n🚗 *{{3.value.fields.marque}} {{3.value.fields.modele}} — {{3.value.fields.variante_choisie}}*\n\n💰 Budget : ${{10.value.fields.prix_vehicule_usd}} USD + CIF\n(soit ~{{formatNumber((10.value.fields.prix_vehicule_usd + (10.value.fields.cif_shipping_sourceur_usd ?? 0)) * 252; 0; ' ')}} DA)\n\nDisponibilité immédiate requise. Réponse sous 24h.",
+                  "text": "🚨 *APPEL D'OFFRES URGENT — SAYARA*\n\nNous recherchons en urgence :\n\n🚗 *{{3.value.fields.marque}} {{3.value.fields.modele}} — {{3.value.fields.reference_variante}}*\n\n💰 Budget : ${{10.value.fields.prix_vehicule_usd}} USD + CIF\n(soit ~{{formatNumber((10.value.fields.prix_vehicule_usd + (10.value.fields.cif_shipping_sourceur_usd ?? 0)) * 252; 0; ' ')}} DA)\n\nDisponibilité immédiate requise. Réponse sous 24h.",
                   "buttons": [
                     { "id": "FALLBACK_DISPO_{{3.value.fields.reference_dossier}}_{{10.value.fields.sourceur_id}}", "title": "✅ Disponible" },
                     { "id": "FALLBACK_INDISPO_{{3.value.fields.reference_dossier}}", "title": "❌ Indisponible" }

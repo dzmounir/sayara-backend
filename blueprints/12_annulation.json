@@ -42,7 +42,7 @@
                 "body": {
                   "to": "{{2.records[1].fields.telephone_sourceur}}",
                   "type": "buttons",
-                  "text": "❓ *Demande d'annulation — Dossier {{2.records[1].fields.reference_dossier}}*\n\nNous avons reçu une demande d'annulation pour votre dossier.\n\n🚗 {{2.records[1].fields.marque}} {{2.records[1].fields.modele}} — {{2.records[1].fields.variante_choisie}}\n\nAvez-vous déjà acheté ce véhicule ?",
+                  "text": "❓ *Demande d'annulation — Dossier {{2.records[1].fields.reference_dossier}}*\n\nNous avons reçu une demande d'annulation pour votre dossier.\n\n🚗 {{2.records[1].fields.marque}} {{2.records[1].fields.modele}} — {{2.records[1].fields.reference_variante}}\n\nAvez-vous déjà acheté ce véhicule ?",
                   "buttons": [
                     { "id": "ANNUL_PAS_ACHETE_{{2.records[1].fields.reference_dossier}}", "title": "❌ Pas encore acheté" },
                     { "id": "ANNUL_DEJA_ACHETE_{{2.records[1].fields.reference_dossier}}", "title": "✅ Déjà acheté" }
@@ -156,7 +156,7 @@
                         "method": "POST",
                         "headers": [{ "name": "Content-Type", "value": "application/json" }],
                         "body": {
-                          "to": "{{2.records[1].fields.telephone}}",
+                          "to": "{{2.records[1].fields.whatsapp_pro}}",
                           "type": "text",
                           "text": "✅ *Annulation confirmée — Dossier {{2.records[1].fields.reference_dossier}}*\n\nVotre demande d'annulation a été traitée.\n\n💰 *Remboursement :* {{formatNumber(6.montant_remboursement; 0; ' ')}} DA\n(Dépôt total — frais notaire)\n\nLe remboursement sera effectué par le notaire sous 5 jours ouvrés.\n\nNous espérons vous revoir bientôt. 🙏"
                         }
@@ -192,7 +192,7 @@
                                 "method": "POST",
                                 "headers": [{ "name": "Content-Type", "value": "application/json" }],
                                 "body": {
-                                  "to": "{{2.records[1].fields.telephone}}",
+                                  "to": "{{2.records[1].fields.whatsapp_pro}}",
                                   "type": "text",
                                   "text": "❌ *Annulation impossible — Dossier {{2.records[1].fields.reference_dossier}}*\n\nVotre véhicule est actuellement *en transit* sur le navire.\n\nSelon les termes de votre contrat, l'annulation n'est pas possible une fois le véhicule embarqué.\n\nNous vous contacterons dès son arrivée au port d'Alger. 🚢"
                                 }
@@ -236,7 +236,7 @@
                               "version": 2,
                               "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "CATALOGUE" },
                               "mapper": {
-                                "filterByFormula": "{reference}=\"{{2.records[1].fields.variante_choisie}}\"",
+                                "filterByFormula": "{reference}=\"{{2.records[1].fields.reference_variante}}\"",
                                 "maxRecords": 1
                               },
                               "metadata": { "designer": { "x": 1500, "y": 450 } }
@@ -253,7 +253,7 @@
                                 "body": {
                                   "to": "{{2.records[1].fields.telephone_sourceur}}",
                                   "type": "buttons",
-                                  "text": "📋 *Demande rétrocession — Dossier {{2.records[1].fields.reference_dossier}}*\n\nUn client souhaite annuler sa commande.\n\n🚗 {{2.records[1].fields.marque}} {{2.records[1].fields.modele}} — {{2.records[1].fields.variante_choisie}}\n\n📊 *Popularité modèle (30j) :* {{length(14.records)}} demandes {{if(length(14.records) >= 3; '🔥 POPULAIRE'; '')}}\n\n💸 *Frais changement propriétaire :* {{formatNumber(15.records[1].fields.frais_changement_prop_da; 0; ' ')}} DA\n\nAcceptez-vous la rétrocession ?",
+                                  "text": "📋 *Demande rétrocession — Dossier {{2.records[1].fields.reference_dossier}}*\n\nUn client souhaite annuler sa commande.\n\n🚗 {{2.records[1].fields.marque}} {{2.records[1].fields.modele}} — {{2.records[1].fields.reference_variante}}\n\n📊 *Popularité modèle (30j) :* {{length(14.records)}} demandes {{if(length(14.records) >= 3; '🔥 POPULAIRE'; '')}}\n\n💸 *Frais changement propriétaire :* {{formatNumber(15.records[1].fields.frais_changement_prop_da; 0; ' ')}} DA\n\nAcceptez-vous la rétrocession ?",
                                   "buttons": [
                                     { "id": "RETRO_ACCEPTE_{{2.records[1].fields.reference_dossier}}",          "title": "✅ J'accepte" },
                                     { "id": "RETRO_REFUSE_{{2.records[1].fields.reference_dossier}}", "title": "❌ Je refuse" }
@@ -327,7 +327,7 @@
                         "method": "POST",
                         "headers": [{ "name": "Content-Type", "value": "application/json" }],
                         "body": {
-                          "to": "{{2.records[1].fields.telephone}}",
+                          "to": "{{2.records[1].fields.whatsapp_pro}}",
                           "type": "text",
                           "text": "✅ *Annulation CAS2 confirmée — Dossier {{2.records[1].fields.reference_dossier}}*\n\n💰 *Remboursement :* {{formatNumber(18.montant_remboursement_cas2; 0; ' ')}} DA\n(Après déduction frais notaire + frais changement propriétaire)\n\nLe remboursement sera effectué par le notaire sous 5 jours ouvrés."
                         }
@@ -370,7 +370,7 @@
                         "method": "POST",
                         "headers": [{ "name": "Content-Type", "value": "application/json" }],
                         "body": {
-                          "to": "{{2.records[1].fields.telephone}}",
+                          "to": "{{2.records[1].fields.whatsapp_pro}}",
                           "type": "text",
                           "text": "⚠️ *Situation particulière — Dossier {{2.records[1].fields.reference_dossier}}*\n\nVotre demande d'annulation nécessite une attention particulière. Un de nos conseillers vous contacte dans les prochaines heures pour vous proposer une solution.\n\nNous vous remercions de votre patience."
                         }

@@ -18,7 +18,7 @@
       "version": 2,
       "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "SOURCEURS" },
       "mapper": {
-        "filterByFormula": "AND({actif}=TRUE(),{methode_import}=\"Google_Sheets\",{lien_google_sheet}!=\"\")",
+        "filterByFormula": "AND({actif}=1,{methode_import}=\"Google_Sheets\",{lien_google_sheet}!=\"\")",
         "fields": "[\"sourceur_id\",\"nom\",\"lien_google_sheet\",\"pays_sourceur\"]",
         "maxRecords": 50
       },
@@ -229,7 +229,7 @@
       "version": 2,
       "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "PRIX_SOURCEURS" },
       "mapper": {
-        "filterByFormula": "AND({sourceur_id}=\"{{3.value.fields.sourceur_id}}\",{actif}=TRUE(),IS_BEFORE({date_mise_a_jour},DATEADD(NOW(),-6,'hours')))",
+        "filterByFormula": "AND({sourceur_id}=\"{{3.value.fields.sourceur_id}}\",{actif}=1,IS_BEFORE({date_mise_a_jour},DATEADD(NOW(),-6,'hours')))",
         "maxRecords": 500,
         "fields": "[\"actif\"]"
       },
