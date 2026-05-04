@@ -1,0 +1,269 @@
+{
+  "name": "SAYARA — 14 Sync Prix Sourceurs",
+  "flow": [
+    {
+      "id": 1,
+      "module": "builtin:BasicScheduler",
+      "version": 1,
+      "parameters": {
+        "type": "cron",
+        "cron": "0 */6 * * *"
+      },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "SOURCEURS" },
+      "mapper": {
+        "filterByFormula": "AND({actif}=TRUE(),{methode_import}=\"Google_Sheets\",{lien_google_sheet}!=\"\")",
+        "fields": "[\"sourceur_id\",\"nom\",\"lien_google_sheet\",\"pays_sourceur\"]",
+        "maxRecords": 50
+      },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicIterator",
+      "version": 1,
+      "parameters": {},
+      "mapper": { "array": "{{2.records}}" },
+      "metadata": { "designer": { "x": 600, "y": 0 } }
+    },
+    {
+      "id": 4,
+      "module": "googleSheets:getRange",
+      "version": 2,
+      "parameters": {},
+      "mapper": {
+        "spreadsheetId": "{{3.value.fields.lien_google_sheet}}",
+        "sheetId": "Catalogue",
+        "range": "A2:P1000",
+        "valueRenderOption": "UNFORMATTED_VALUE"
+      },
+      "metadata": { "designer": { "x": 900, "y": 0 } }
+    },
+    {
+      "id": 5,
+      "module": "builtin:BasicIterator",
+      "version": 1,
+      "parameters": {},
+      "mapper": { "array": "{{4.values}}" },
+      "metadata": { "designer": { "x": 1200, "y": 0 } }
+    },
+    {
+      "id": 6,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 1500, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 7,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "PRIX_SOURCEURS" },
+              "mapper": {
+                "filterByFormula": "AND({sourceur_id}=\"{{3.value.fields.sourceur_id}}\",{marque}=\"{{5.value[1]}}\",{modele}=\"{{5.value[2]}}\",{annee}=\"{{5.value[3]}}\",{finition}=\"{{5.value[4]}}\",{boite_vitesse}=\"{{5.value[5]}}\",{couleur}=\"{{5.value[6]}}\")",
+                "maxRecords": 1
+              },
+              "metadata": { "designer": { "x": 1800, "y": -100 } }
+            },
+            {
+              "id": 8,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": { "designer": { "x": 2100, "y": -100 } },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 9,
+                      "module": "airtable:updateRecord",
+                      "version": 2,
+                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "PRIX_SOURCEURS" },
+                      "mapper": {
+                        "id": "{{7.records[1].id}}",
+                        "fields": {
+                          "prix_vehicule_usd":             "{{5.value[7]}}",
+                          "cif_shipping_sourceur_usd":     "{{5.value[8]}}",
+                          "stock":                         "{{5.value[9]}}",
+                          "date_mise_a_jour":              "{{now}}",
+                          "actif":                         true
+                        }
+                      },
+                      "metadata": { "designer": { "x": 2400, "y": -200 } }
+                    }
+                  ],
+                  "label": "Entrée existante → update",
+                  "filter": {
+                    "name": "Entrée existe",
+                    "conditions": [[{ "a": "{{7.records[1].id}}", "o": "text:exist", "b": "" }]]
+                  }
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 10,
+                      "module": "builtin:BasicRouter",
+                      "version": 1,
+                      "parameters": {},
+                      "mapper": {},
+                      "metadata": { "designer": { "x": 2400, "y": 0 } },
+                      "routes": [
+                        {
+                          "flow": [
+                            {
+                              "id": 11,
+                              "module": "airtable:searchRecords",
+                              "version": 2,
+                              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "PRIX_SOURCEURS" },
+                              "mapper": {
+                                "filterByFormula": "AND({pays_sourceur}=\"{{3.value.fields.pays_sourceur}}\",{cif_shipping_sourceur_usd}!=\"\")",
+                                "fields": "[\"cif_shipping_sourceur_usd\"]",
+                                "maxRecords": 100
+                              },
+                              "metadata": { "designer": { "x": 2700, "y": -50 } }
+                            },
+                            {
+                              "id": 12,
+                              "module": "builtin:BasicAggregator",
+                              "version": 1,
+                              "parameters": { "groupBy": "" },
+                              "mapper": {
+                                "value": "{{11.records[].fields.cif_shipping_sourceur_usd}}"
+                              },
+                              "metadata": { "designer": { "x": 3000, "y": -50 } }
+                            },
+                            {
+                              "id": 13,
+                              "module": "airtable:createRecord",
+                              "version": 2,
+                              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "PRIX_SOURCEURS" },
+                              "mapper": {
+                                "fields": {
+                                  "sourceur_id":               "{{3.value.fields.sourceur_id}}",
+                                  "pays_sourceur":             "{{3.value.fields.pays_sourceur}}",
+                                  "marque":                    "{{5.value[1]}}",
+                                  "modele":                    "{{5.value[2]}}",
+                                  "annee":                     "{{5.value[3]}}",
+                                  "finition":                  "{{5.value[4]}}",
+                                  "boite_vitesse":             "{{5.value[5]}}",
+                                  "couleur":                   "{{5.value[6]}}",
+                                  "prix_vehicule_usd":         "{{5.value[7]}}",
+                                  "cif_shipping_sourceur_usd": "{{5.value[8]}}",
+                                  "cif_shipping_calcule_usd":  "{{average(12.array)}}",
+                                  "stock":                     "{{5.value[9]}}",
+                                  "actif":                     true,
+                                  "date_mise_a_jour":          "{{now}}"
+                                }
+                              },
+                              "metadata": { "designer": { "x": 3300, "y": -50 } }
+                            }
+                          ],
+                          "label": "CIF vide → calculer moyenne",
+                          "filter": {
+                            "name": "CIF absent",
+                            "conditions": [[{ "a": "{{5.value[8]}}", "o": "text:notexist", "b": "" }]]
+                          }
+                        },
+                        {
+                          "flow": [
+                            {
+                              "id": 14,
+                              "module": "airtable:createRecord",
+                              "version": 2,
+                              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "PRIX_SOURCEURS" },
+                              "mapper": {
+                                "fields": {
+                                  "sourceur_id":               "{{3.value.fields.sourceur_id}}",
+                                  "pays_sourceur":             "{{3.value.fields.pays_sourceur}}",
+                                  "marque":                    "{{5.value[1]}}",
+                                  "modele":                    "{{5.value[2]}}",
+                                  "annee":                     "{{5.value[3]}}",
+                                  "finition":                  "{{5.value[4]}}",
+                                  "boite_vitesse":             "{{5.value[5]}}",
+                                  "couleur":                   "{{5.value[6]}}",
+                                  "prix_vehicule_usd":         "{{5.value[7]}}",
+                                  "cif_shipping_sourceur_usd": "{{5.value[8]}}",
+                                  "stock":                     "{{5.value[9]}}",
+                                  "actif":                     true,
+                                  "date_mise_a_jour":          "{{now}}"
+                                }
+                              },
+                              "metadata": { "designer": { "x": 2700, "y": 100 } }
+                            }
+                          ],
+                          "label": "CIF présent → créer directement"
+                        }
+                      ]
+                    }
+                  ],
+                  "label": "Nouvelle entrée → créer"
+                }
+              ]
+            }
+          ],
+          "label": "Ligne valide (non vide)"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "module": "builtin:BasicAggregator",
+      "version": 1,
+      "parameters": { "groupBy": "{{3.value.fields.sourceur_id}}" },
+      "mapper": { "value": "{{5.value[0]}}" },
+      "metadata": { "designer": { "x": 1500, "y": 300 } }
+    },
+    {
+      "id": 16,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "PRIX_SOURCEURS" },
+      "mapper": {
+        "filterByFormula": "AND({sourceur_id}=\"{{3.value.fields.sourceur_id}}\",{actif}=TRUE(),IS_BEFORE({date_mise_a_jour},DATEADD(NOW(),-6,'hours')))",
+        "maxRecords": 500,
+        "fields": "[\"actif\"]"
+      },
+      "metadata": { "designer": { "x": 1800, "y": 300 } }
+    },
+    {
+      "id": 17,
+      "module": "builtin:BasicIterator",
+      "version": 1,
+      "parameters": {},
+      "mapper": { "array": "{{16.records}}" },
+      "metadata": { "designer": { "x": 2100, "y": 300 } }
+    },
+    {
+      "id": 18,
+      "module": "airtable:updateRecord",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "PRIX_SOURCEURS" },
+      "mapper": {
+        "id": "{{17.value.id}}",
+        "fields": { "actif": false }
+      },
+      "metadata": { "designer": { "x": 2400, "y": 300 } }
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false
+    }
+  }
+}

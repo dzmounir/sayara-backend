@@ -1,0 +1,357 @@
+{
+  "name": "SAYARA — 10 Pénalités Retard Sourceur",
+  "flow": [
+    {
+      "id": 1,
+      "module": "builtin:BasicScheduler",
+      "version": 1,
+      "parameters": {
+        "type": "cron",
+        "cron": "0 8 * * *"
+      },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+      "mapper": {
+        "filterByFormula": "AND({statut}=\"VEHICULE_ACHETE\",{docs_embarquement_complets}=FALSE(),{date_confirmation_commande}!=\"\")",
+        "maxRecords": 100,
+        "fields": "[\"reference_dossier\",\"date_confirmation_commande\",\"telephone\",\"prenom\",\"nom\",\"telephone_sourceur\",\"nom_sourceur\",\"sourceur_assigne\",\"prix_vehicule_affiche\",\"variante_choisie\",\"marque\",\"modele\",\"penalites_sourceur_da\",\"boite_vitesse\",\"couleur_choisie\"]"
+      },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicIterator",
+      "version": 1,
+      "parameters": {},
+      "mapper": { "array": "{{2.records}}" },
+      "metadata": { "designer": { "x": 600, "y": 0 } }
+    },
+    {
+      "id": 4,
+      "module": "tools:SetVariables",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "variables": [
+          {
+            "name": "jours_retard",
+            "value": "{{floor((timestamp(now) - timestamp(3.value.fields.date_confirmation_commande)) / 86400)}}"
+          },
+          {
+            "name": "penalites_da",
+            "value": "{{if(floor((timestamp(now) - timestamp(3.value.fields.date_confirmation_commande)) / 86400) > 10; (floor((timestamp(now) - timestamp(3.value.fields.date_confirmation_commande)) / 86400) - 10) * 10000; 0)}}"
+          }
+        ]
+      },
+      "metadata": { "designer": { "x": 900, "y": 0 } }
+    },
+    {
+      "id": 5,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 1200, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 6,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{3.value.fields.telephone_sourceur}}",
+                  "type": "text",
+                  "text": "👋 Bonjour,\n\nNous souhaitions faire le point sur le dossier *{{3.value.fields.reference_dossier}}*.\n\n🚗 {{3.value.fields.marque}} {{3.value.fields.modele}} — {{3.value.fields.variante_choisie}}\n\nPourriez-vous nous communiquer une date prévisionnelle d'envoi des documents d'embarquement ?\n\nMerci 🙏"
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": -400 } }
+            }
+          ],
+          "label": "Jour 6 — 1ère relance douce",
+          "filter": {
+            "name": "J6",
+            "conditions": [[{ "a": "{{4.jours_retard}}", "o": "number:equal", "b": "6" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 7,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{3.value.fields.telephone_sourceur}}",
+                  "type": "text",
+                  "text": "⚠️ *Relance — Dossier {{3.value.fields.reference_dossier}}* (J+{{4.jours_retard}})\n\nNous n'avons pas encore reçu les documents d'embarquement.\n\n🚗 {{3.value.fields.marque}} {{3.value.fields.modele}}\n👤 Client : {{3.value.fields.prenom}} {{3.value.fields.nom}}\n\nMerci de nous transmettre les documents au plus vite. Le délai sans pénalité expire dans *{{10 - 4.jours_retard}} jour(s)*."
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": -250 } }
+            }
+          ],
+          "label": "Jour 8 — 2ème relance",
+          "filter": {
+            "name": "J8",
+            "conditions": [[{ "a": "{{4.jours_retard}}", "o": "number:equal", "b": "8" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 8,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{3.value.fields.telephone_sourceur}}",
+                  "type": "text",
+                  "text": "🔴 *DERNIER JOUR SANS PÉNALITÉ — Dossier {{3.value.fields.reference_dossier}}*\n\nC'est aujourd'hui le dernier jour gratuit (J+10).\n\nÀ partir de demain, des *pénalités de 10 000 DA/jour* seront appliquées conformément au contrat.\n\nTransmettez les documents maintenant pour éviter tout frais supplémentaire.\n\n📩 Commande : envoyez DOSSIER {{3.value.fields.reference_dossier}}"
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": -100 } }
+            }
+          ],
+          "label": "Jour 10 — alerte pénalités",
+          "filter": {
+            "name": "J10",
+            "conditions": [[{ "a": "{{4.jours_retard}}", "o": "number:equal", "b": "10" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 9,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "PRIX_SOURCEURS" },
+              "mapper": {
+                "filterByFormula": "AND({modele}=\"{{3.value.fields.modele}}\",{finition}=\"{{3.value.fields.variante_choisie}}\",{stock}>0,{actif}=TRUE(),{sourceur_id}!=\"{{3.value.fields.sourceur_assigne}}\")",
+                "maxRecords": 5,
+                "sort": "[{\"field\":\"prix_vehicule_usd\",\"direction\":\"asc\"}]",
+                "fields": "[\"sourceur_id\",\"telephone_sourceur\",\"prix_vehicule_usd\",\"cif_shipping_sourceur_usd\"]"
+              },
+              "metadata": { "designer": { "x": 1500, "y": 100 } }
+            },
+            {
+              "id": 10,
+              "module": "builtin:BasicIterator",
+              "version": 1,
+              "parameters": {},
+              "mapper": { "array": "{{9.records}}" },
+              "metadata": { "designer": { "x": 1800, "y": 100 } }
+            },
+            {
+              "id": 11,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{10.value.fields.telephone_sourceur}}",
+                  "type": "buttons",
+                  "text": "🚨 *APPEL D'OFFRES URGENT — SAYARA*\n\nNous recherchons en urgence :\n\n🚗 *{{3.value.fields.marque}} {{3.value.fields.modele}} — {{3.value.fields.variante_choisie}}*\n\n💰 Budget : ${{10.value.fields.prix_vehicule_usd}} USD + CIF\n(soit ~{{formatNumber((10.value.fields.prix_vehicule_usd + (10.value.fields.cif_shipping_sourceur_usd ?? 0)) * 252; 0; ' ')}} DA)\n\nDisponibilité immédiate requise. Réponse sous 24h.",
+                  "buttons": [
+                    { "id": "FALLBACK_DISPO_{{3.value.fields.reference_dossier}}_{{10.value.fields.sourceur_id}}", "title": "✅ Disponible" },
+                    { "id": "FALLBACK_INDISPO_{{3.value.fields.reference_dossier}}", "title": "❌ Indisponible" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 2100, "y": 100 } }
+            }
+          ],
+          "label": "Jour 12 — cascade sourceurs",
+          "filter": {
+            "name": "J12",
+            "conditions": [[{ "a": "{{4.jours_retard}}", "o": "number:equal", "b": "12" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 12,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{3.value.id}}",
+                "fields": {
+                  "penalites_sourceur_da": "{{4.penalites_da}}",
+                  "jours_retard": "{{4.jours_retard}}"
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": 300 } }
+            },
+            {
+              "id": 13,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "SOURCEURS" },
+              "mapper": {
+                "filterByFormula": "{sourceur_id}=\"{{3.value.fields.sourceur_assigne}}\"",
+                "fields": {
+                  "penalites_totales_da": "{{3.value.fields.penalites_sourceur_da + 4.penalites_da}}"
+                }
+              },
+              "metadata": { "designer": { "x": 1800, "y": 300 } }
+            },
+            {
+              "id": 14,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{3.value.fields.telephone_sourceur}}",
+                  "type": "text",
+                  "text": "💸 *Pénalités de retard — Dossier {{3.value.fields.reference_dossier}}* (J+{{4.jours_retard}})\n\nConformément au contrat, des pénalités sont appliquées :\n\n⏰ Jours de retard : {{4.jours_retard - 10}} jour(s) (au-delà de J+10)\n💰 Pénalités : *{{formatNumber(4.penalites_da; 0; ' ')}} DA* (10 000 DA/jour)\n\nCes montants seront déduits de votre paiement final.\n\n📩 Transmettez les documents maintenant pour stopper les pénalités."
+                }
+              },
+              "metadata": { "designer": { "x": 2100, "y": 300 } }
+            },
+            {
+              "id": 15,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{COURTIER_WHATSAPP}}",
+                  "type": "text",
+                  "text": "📊 Pénalités retard — {{3.value.fields.reference_dossier}}\nSourceur : {{3.value.fields.nom_sourceur}}\nJ+{{4.jours_retard}} — Pénalités : {{formatNumber(4.penalites_da; 0; ' ')}} DA"
+                }
+              },
+              "metadata": { "designer": { "x": 2400, "y": 300 } }
+            }
+          ],
+          "label": "J>10 — appliquer pénalités",
+          "filter": {
+            "name": "Jours > 10",
+            "conditions": [[{ "a": "{{4.jours_retard}}", "o": "number:greater", "b": "10" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 16,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{3.value.fields.telephone_sourceur}}",
+                  "type": "text",
+                  "text": "📞 *Dossier {{3.value.fields.reference_dossier}}* — J+{{4.jours_retard}}\n\nNous souhaitons vous appeler pour faire le point.\n\nÀ quel moment êtes-vous disponible pour un appel ?"
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": 500 } }
+            }
+          ],
+          "label": "J14 ou J15 — demande d'appel",
+          "filter": {
+            "name": "J14-15",
+            "conditions": [[{ "a": "{{4.jours_retard}}", "o": "number:between", "b": "14", "c": "15" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 17,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{COURTIER_WHATSAPP}}",
+                  "type": "text",
+                  "text": "🚨 *ALERTE URGENTE — J+16*\n\nDossier {{3.value.fields.reference_dossier}} sans documents depuis 16 jours.\nSourceur : {{3.value.fields.nom_sourceur}} — {{3.value.fields.telephone_sourceur}}\n\nAction immédiate requise."
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": 650 } }
+            }
+          ],
+          "label": "J16 — alerte URGENTE courtier",
+          "filter": {
+            "name": "J16",
+            "conditions": [[{ "a": "{{4.jours_retard}}", "o": "number:equal", "b": "16" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 18,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{COURTIER_WHATSAPP}}",
+                  "type": "buttons",
+                  "text": "🔴 *J+20 — DÉCISION REQUISE*\n\nDossier {{3.value.fields.reference_dossier}}\nSourceur : {{3.value.fields.nom_sourceur}}\nVéhicule non acheté après 20 jours.\n\nDéclencher remboursement client + saisie garantie sourceur ?",
+                  "buttons": [
+                    { "id": "DECLENCHER_REMBOURSEMENT_{{3.value.fields.reference_dossier}}", "title": "🔴 Remboursement" },
+                    { "id": "PROLONGER_{{3.value.fields.reference_dossier}}", "title": "⏳ Prolonger" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": 800 } }
+            }
+          ],
+          "label": "J20 — remboursement",
+          "filter": {
+            "name": "J20+",
+            "conditions": [[{ "a": "{{4.jours_retard}}", "o": "number:greater", "b": "19" }]]
+          }
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false
+    }
+  }
+}

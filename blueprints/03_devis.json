@@ -1,0 +1,472 @@
+{
+  "name": "SAYARA — 03 Devis",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 2,
+      "parameters": { "hook": "{{HOOK_ID_DEVIS}}", "maxResults": 1 },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+      "mapper": {
+        "filterByFormula": "{{1.body.from}}",
+        "filterField": "telephone",
+        "maxRecords": 1
+      },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "CATALOGUE" },
+      "mapper": {
+        "filterByFormula": "AND({reference}=\"{{1.body.list_reply.id}}\",{actif}=TRUE())",
+        "maxRecords": 1
+      },
+      "metadata": { "designer": { "x": 300, "y": 150 } }
+    },
+    {
+      "id": 4,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 600, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 5,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "list",
+                  "text": "🎨 Quelle couleur préférez-vous pour votre *{{3.records[1].fields.libelle}}* ?\n\n(Tapez sur une option pour voir la disponibilité en stock)",
+                  "button_title": "Choisir couleur",
+                  "sections": [
+                    {
+                      "title": "🎨 Couleurs disponibles",
+                      "rows": [
+                        { "id": "COULEUR_BLANC",      "title": "⬜ Blanc Nacré",    "description": "Teinte Blanc Glacier — stock disponible" },
+                        { "id": "COULEUR_GRIS",       "title": "🩶 Gris Schiste",   "description": "Teinte Gris Platine — stock disponible" },
+                        { "id": "COULEUR_NOIR",       "title": "⬛ Noir Étoilé",    "description": "Teinte Noir profond — stock disponible" },
+                        { "id": "COULEUR_MARRON",     "title": "🟫 Terracotta",     "description": "Teinte Terracotta Sable — stock disponible" },
+                        { "id": "COULEUR_PEU_IMPORTE","title": "🌈 Peu importe",    "description": "Meilleure disponibilité — livraison plus rapide" }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 900, "y": -100 } }
+            }
+          ],
+          "label": "Finition choisie (list_reply SAY-Vx)",
+          "filter": {
+            "name": "Finition choisie",
+            "conditions": [
+              [{ "a": "{{1.body.type}}", "o": "text:equal", "b": "interactive" }]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "VARIABLES_GLOBALES" },
+      "mapper": {},
+      "metadata": { "designer": { "x": 600, "y": 300 } }
+    },
+    {
+      "id": 7,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 1200, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 8,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "buttons",
+                  "text": "⚙️ Quelle boîte de vitesses préférez-vous ?",
+                  "buttons": [
+                    { "id": "BOITE_AUTO",        "title": "🔄 Automatique" },
+                    { "id": "BOITE_MANUELLE",    "title": "⚙️ Manuelle" },
+                    { "id": "BOITE_PEU_IMPORTE", "title": "🌀 Peu importe" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": -100 } }
+            }
+          ],
+          "label": "Couleur choisie"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 1800, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 10,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "text",
+                  "text": "📝 Votre *prénom* s'il vous plaît ?"
+                }
+              },
+              "metadata": { "designer": { "x": 2100, "y": -100 } }
+            },
+            {
+              "id": 11,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{2.records[1].id}}",
+                "fields": {
+                  "variante_choisie": "{{1.body.list_reply.id}}",
+                  "boite_vitesse": "{{1.body.button_reply.id}}",
+                  "etape_qualification": "PRENOM",
+                  "statut": "EN_QUALIFICATION"
+                }
+              },
+              "metadata": { "designer": { "x": 2100, "y": 50 } }
+            }
+          ],
+          "label": "Boîte choisie → demander prénom"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 2400, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 13,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{2.records[1].id}}",
+                "fields": { "prenom": "{{1.body.text}}", "etape_qualification": "NOM" }
+              },
+              "metadata": { "designer": { "x": 2700, "y": -200 } }
+            },
+            {
+              "id": 14,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "text",
+                  "text": "📝 Votre *nom de famille* ?"
+                }
+              },
+              "metadata": { "designer": { "x": 3000, "y": -200 } }
+            }
+          ],
+          "label": "Réponse prénom",
+          "filter": {
+            "name": "Réponse prénom",
+            "conditions": [
+              [{ "a": "{{2.records[1].fields.etape_qualification}}", "o": "text:equal", "b": "PRENOM" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 15,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{2.records[1].id}}",
+                "fields": { "nom": "{{1.body.text}}", "etape_qualification": "EMAIL" }
+              },
+              "metadata": { "designer": { "x": 2700, "y": 0 } }
+            },
+            {
+              "id": 16,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "text",
+                  "text": "📧 Votre *adresse email* ?"
+                }
+              },
+              "metadata": { "designer": { "x": 3000, "y": 0 } }
+            }
+          ],
+          "label": "Réponse nom",
+          "filter": {
+            "name": "Réponse nom",
+            "conditions": [
+              [{ "a": "{{2.records[1].fields.etape_qualification}}", "o": "text:equal", "b": "NOM" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 17,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{2.records[1].id}}",
+                "fields": { "email": "{{1.body.text}}", "etape_qualification": "COMMUNE" }
+              },
+              "metadata": { "designer": { "x": 2700, "y": 200 } }
+            },
+            {
+              "id": 18,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "text",
+                  "text": "📍 Dans quelle *commune* habitez-vous ?\n\n(Ex : Hydra, Kouba, Chéraga, Oran, Constantine…)"
+                }
+              },
+              "metadata": { "designer": { "x": 3000, "y": 200 } }
+            }
+          ],
+          "label": "Réponse email",
+          "filter": {
+            "name": "Réponse email",
+            "conditions": [
+              [{ "a": "{{2.records[1].fields.etape_qualification}}", "o": "text:equal", "b": "EMAIL" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 19,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://api.anthropic.com/v1/messages",
+                "method": "POST",
+                "headers": [
+                  { "name": "x-api-key",        "value": "{{ANTHROPIC_API_KEY}}" },
+                  { "name": "anthropic-version", "value": "2023-06-01" },
+                  { "name": "Content-Type",       "value": "application/json" }
+                ],
+                "body": {
+                  "model": "claude-haiku-4-5-20251001",
+                  "max_tokens": 128,
+                  "messages": [
+                    {
+                      "role": "user",
+                      "content": "Normalise ce nom de commune algérienne en code standard. Réponds UNIQUEMENT en JSON pur: {\"commune_normalisee\":\"...\",\"wilaya\":\"...\",\"zone_alger\":\"EST_CENTRE|OUEST|null\"}\nEntrée: {{1.body.text}}"
+                    }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 2700, "y": 400 } }
+            },
+            {
+              "id": 20,
+              "module": "json:ParseJSON",
+              "version": 1,
+              "parameters": {},
+              "mapper": { "json": "{{19.data.content[1].text}}" },
+              "metadata": { "designer": { "x": 3000, "y": 400 } }
+            },
+            {
+              "id": 21,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
+              "mapper": {
+                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{20.commune_normalisee}}\",{zone_alger}=\"{{20.zone_alger}}\"))",
+                "maxRecords": 2
+              },
+              "metadata": { "designer": { "x": 3300, "y": 400 } }
+            },
+            {
+              "id": 22,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{2.records[1].id}}",
+                "fields": {
+                  "commune": "{{20.commune_normalisee}}",
+                  "wilaya": "{{20.wilaya}}",
+                  "zone_alger": "{{20.zone_alger}}",
+                  "etape_qualification": "FORMULE"
+                }
+              },
+              "metadata": { "designer": { "x": 3300, "y": 600 } }
+            },
+            {
+              "id": 23,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "buttons",
+                  "text": "🚢 Quelle formule vous convient ?\n\n📦 *Livré au port* — Le véhicule vous est remis au port d'Alger. Vous gérez le dédouanement.\n\n🏠 *Dédouané* — Nous gérons tout jusqu'à la livraison complète.",
+                  "buttons": [
+                    { "id": "FORMULE_LIVRE_AU_PORT", "title": "📦 Livré au port" },
+                    { "id": "FORMULE_DEDOUANE",      "title": "🏠 Dédouané complet" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 3600, "y": 400 } }
+            }
+          ],
+          "label": "Réponse commune",
+          "filter": {
+            "name": "Réponse commune",
+            "conditions": [
+              [{ "a": "{{2.records[1].fields.etape_qualification}}", "o": "text:equal", "b": "COMMUNE" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 24,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "text",
+                  "text": "⏳ *Calcul de votre devis en cours…*\n\nJe recherche le meilleur sourceur disponible pour votre configuration. Cela prend environ 30 secondes."
+                }
+              },
+              "metadata": { "designer": { "x": 2700, "y": 600 } }
+            },
+            {
+              "id": 25,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/api/pricing/devis",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "telephone": "{{1.body.from}}",
+                  "dossier_id": "{{2.records[1].id}}",
+                  "formule": "{{1.body.button_reply.id}}"
+                }
+              },
+              "metadata": { "designer": { "x": 3000, "y": 600 } }
+            },
+            {
+              "id": 26,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{2.records[1].id}}",
+                "fields": {
+                  "formule_choisie": "{{1.body.button_reply.id}}",
+                  "statut": "DEVIS_ENVOYE",
+                  "score_intention": 20,
+                  "date_devis": "{{now}}"
+                }
+              },
+              "metadata": { "designer": { "x": 3300, "y": 600 } }
+            }
+          ],
+          "label": "Formule choisie → générer devis",
+          "filter": {
+            "name": "Formule choisie",
+            "conditions": [
+              [{ "a": "{{2.records[1].fields.etape_qualification}}", "o": "text:equal", "b": "FORMULE" }]
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true
+    }
+  }
+}

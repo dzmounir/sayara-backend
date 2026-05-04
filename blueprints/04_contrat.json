@@ -1,0 +1,283 @@
+{
+  "name": "SAYARA — 04 Contrat",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 2,
+      "parameters": { "hook": "{{HOOK_ID_CONTRAT}}", "maxResults": 1 },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+      "mapper": {
+        "filterByFormula": "AND({telephone}=\"{{1.body.from}}\",{statut}=\"DEVIS_ENVOYE\")",
+        "maxRecords": 1
+      },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 600, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 4,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://api.carbone.io/render/{{CARBONE_TEMPLATE_CONTRAT}}",
+                "method": "POST",
+                "headers": [
+                  { "name": "Authorization", "value": "Bearer {{CARBONE_API_KEY}}" },
+                  { "name": "Content-Type",   "value": "application/json" }
+                ],
+                "body": {
+                  "data": {
+                    "reference_dossier":    "{{2.records[1].fields.reference_dossier}}",
+                    "nom_acheteur":         "{{2.records[1].fields.nom}}",
+                    "prenom_acheteur":      "{{2.records[1].fields.prenom}}",
+                    "adresse":              "{{2.records[1].fields.commune}}",
+                    "marque":               "{{2.records[1].fields.marque}}",
+                    "modele":               "{{2.records[1].fields.modele}}",
+                    "annee":                "{{2.records[1].fields.annee}}",
+                    "finition":             "{{2.records[1].fields.variante_choisie}}",
+                    "boite_vitesse":        "{{2.records[1].fields.boite_vitesse}}",
+                    "couleur_1":            "{{2.records[1].fields.couleur_choisie}}",
+                    "formule_choisie":      "{{2.records[1].fields.formule_choisie}}",
+                    "montant_total":        "{{2.records[1].fields.total_livre_au_port}}",
+                    "frais_retractation":   150000,
+                    "date_contrat":         "{{formatDate(now; \"DD/MM/YYYY\")}}"
+                  },
+                  "convertTo": "pdf"
+                }
+              },
+              "metadata": { "designer": { "x": 900, "y": -100 } }
+            },
+            {
+              "id": 5,
+              "module": "googleDrive:uploadFile",
+              "version": 3,
+              "parameters": { "scope": "drive" },
+              "mapper": {
+                "folderId": "{{GDRIVE_FOLDER_CONTRATS}}/{{2.records[1].fields.reference_dossier}}",
+                "fileName": "Contrat_{{2.records[1].fields.reference_dossier}}.pdf",
+                "data": "{{4.data.renderId}}"
+              },
+              "metadata": { "designer": { "x": 1200, "y": -100 } }
+            },
+            {
+              "id": 6,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "document",
+                  "url": "{{5.webViewLink}}",
+                  "filename": "Contrat_SAYARA_{{2.records[1].fields.reference_dossier}}.pdf",
+                  "caption": "📄 Voici votre contrat de vente SAYARA.\n\nMerci de le lire attentivement avant d'accepter. Vous disposez d'un délai de réflexion de *72h*.\n\nEn cas de désistement après acceptation, des frais de *150 000 DA* sont retenus."
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": -100 } }
+            },
+            {
+              "id": 7,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "buttons",
+                  "text": "✅ Acceptez-vous les termes du contrat ?",
+                  "buttons": [
+                    { "id": "JACCEPTE",  "title": "✅ J'accepte" },
+                    { "id": "QUESTION_CONTRAT", "title": "❓ J'ai une question" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 1800, "y": -100 } }
+            }
+          ],
+          "label": "Client confirme → générer contrat",
+          "filter": {
+            "name": "Client confirme",
+            "conditions": [
+              [{ "a": "{{1.body.button_reply.id}}", "o": "text:equal", "b": "CONFIRMER" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 8,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{2.records[1].id}}",
+                "fields": {
+                  "contrat_signe": true,
+                  "timestamp_signature": "{{now}}",
+                  "statut": "CONTRAT_SIGNE"
+                }
+              },
+              "metadata": { "designer": { "x": 900, "y": 100 } }
+            },
+            {
+              "id": 9,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
+              "mapper": {
+                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{2.records[1].fields.commune}}\",{zone_alger}=\"{{2.records[1].fields.zone_alger}}\"))",
+                "maxRecords": 1
+              },
+              "metadata": { "designer": { "x": 1200, "y": 100 } }
+            },
+            {
+              "id": 10,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://api.carbone.io/render/{{CARBONE_TEMPLATE_RECONNAISSANCE}}",
+                "method": "POST",
+                "headers": [
+                  { "name": "Authorization", "value": "Bearer {{CARBONE_API_KEY}}" },
+                  { "name": "Content-Type",   "value": "application/json" }
+                ],
+                "body": {
+                  "data": {
+                    "reference_dossier":  "{{2.records[1].fields.reference_dossier}}",
+                    "nom_acheteur":       "{{2.records[1].fields.nom}}",
+                    "prenom_acheteur":    "{{2.records[1].fields.prenom}}",
+                    "adresse":            "{{2.records[1].fields.commune}}",
+                    "montant_total":      "{{2.records[1].fields.total_livre_au_port}}",
+                    "montant_70":         "{{round(2.records[1].fields.total_livre_au_port * 0.7; 0)}}",
+                    "montant_30":         "{{round(2.records[1].fields.total_livre_au_port * 0.3; 0)}}",
+                    "nom_notaire":        "{{9.records[1].fields.nom_notaire}}",
+                    "adresse_etude":      "{{9.records[1].fields.adresse_etude}}",
+                    "ville_notaire":      "{{9.records[1].fields.ville}}",
+                    "date_acte":          "{{formatDate(now; \"DD/MM/YYYY\")}}"
+                  },
+                  "convertTo": "pdf"
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": 100 } }
+            },
+            {
+              "id": 11,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "text",
+                  "text": "🎉 *Contrat accepté avec succès !*\n\nVotre dossier SAYARA *{{2.records[1].fields.reference_dossier}}* est maintenant actif.\n\n📍 *Rendez-vous chez le notaire :*\nMaître {{9.records[1].fields.nom_notaire}}\n{{9.records[1].fields.adresse_etude}}\n\n💰 *Montant à déposer :* {{formatNumber(2.records[1].fields.total_livre_au_port; 0; \" \")}} DA\n\n⚠️ Merci de vous présenter avec une pièce d'identité valide."
+                }
+              },
+              "metadata": { "designer": { "x": 1800, "y": 100 } }
+            },
+            {
+              "id": 12,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{COURTIER_WHATSAPP}}",
+                  "type": "text",
+                  "text": "✅ *Nouveau contrat signé !*\n\n📋 Dossier : {{2.records[1].fields.reference_dossier}}\n👤 Client : {{2.records[1].fields.prenom}} {{2.records[1].fields.nom}}\n📞 Tel : {{1.body.from}}\n🚗 Véhicule : {{2.records[1].fields.variante_choisie}}\n💰 Montant : {{formatNumber(2.records[1].fields.total_livre_au_port; 0; \" \")}} DA\n📍 Notaire : {{9.records[1].fields.nom_notaire}}"
+                }
+              },
+              "metadata": { "designer": { "x": 2100, "y": 100 } }
+            }
+          ],
+          "label": "Client accepte → signature",
+          "filter": {
+            "name": "Client accepte",
+            "conditions": [
+              [{ "a": "{{1.body.button_reply.id}}", "o": "text:equal", "b": "JACCEPTE" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 13,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "text",
+                  "text": "💬 Pas de souci ! Notre conseiller vous contacte dans les prochaines heures pour répondre à toutes vos questions.\n\nVotre devis reste valide 48h."
+                }
+              },
+              "metadata": { "designer": { "x": 900, "y": 300 } }
+            },
+            {
+              "id": 14,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{COURTIER_WHATSAPP}}",
+                  "type": "text",
+                  "text": "❓ *Question contrat*\n\n📋 Dossier : {{2.records[1].fields.reference_dossier}}\n👤 Client : {{2.records[1].fields.prenom}} {{2.records[1].fields.nom}}\n📞 Tel : {{1.body.from}}\n\nLe client a une question avant de signer. Contacter ASAP."
+                }
+              },
+              "metadata": { "designer": { "x": 1200, "y": 300 } }
+            }
+          ],
+          "label": "Client a une question"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true
+    }
+  }
+}

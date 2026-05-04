@@ -1,0 +1,427 @@
+{
+  "name": "SAYARA — 11 Outillage Notaire",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 2,
+      "parameters": { "hook": "{{HOOK_ID_NOTAIRE}}", "maxResults": 1 },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 300, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 3,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "filterByFormula": "AND({statut}=\"CONTRAT_SIGNE\",{notaire_msg1_envoye}=FALSE())",
+                "maxRecords": 50
+              },
+              "metadata": { "designer": { "x": 600, "y": -200 } }
+            },
+            {
+              "id": 4,
+              "module": "builtin:BasicIterator",
+              "version": 1,
+              "parameters": {},
+              "mapper": { "array": "{{3.records}}" },
+              "metadata": { "designer": { "x": 900, "y": -200 } }
+            },
+            {
+              "id": 5,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
+              "mapper": {
+                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{4.value.fields.commune}}\",{zone_alger}=\"{{4.value.fields.zone_alger}}\"))",
+                "maxRecords": 1
+              },
+              "metadata": { "designer": { "x": 1200, "y": -200 } }
+            },
+            {
+              "id": 6,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{5.records[1].fields.whatsapp_notaire}}",
+                  "type": "buttons",
+                  "text": "📋 *Dépôt J1 — Dossier {{4.value.fields.reference_dossier}}*\n\nMaître {{5.records[1].fields.nom_notaire}},\n\nUn client SAYARA va se présenter à votre étude pour le dépôt initial.\n\n👤 *Client :* {{4.value.fields.prenom}} {{4.value.fields.nom}}\n🚗 *Véhicule :* {{4.value.fields.marque}} {{4.value.fields.modele}} — {{4.value.fields.variante_choisie}}\n📋 *Réf :* {{4.value.fields.reference_dossier}}\n\n💰 *Montant à recevoir en dépôt :*\n*{{formatNumber(4.value.fields.total_livre_au_port; 0; ' ')}} DA*\n\nInstructions : créer une reconnaissance de dette selon le modèle SAYARA transmis.\n\nConfirmez-vous la prise en charge ?",
+                  "buttons": [
+                    { "id": "NOTAIRE_DEPOT_OK_{{4.value.fields.reference_dossier}}",    "title": "✅ Confirmé" },
+                    { "id": "NOTAIRE_DEPOT_ALERT_{{4.value.fields.reference_dossier}}", "title": "⚠️ Problème" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": -200 } }
+            },
+            {
+              "id": 7,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{4.value.id}}",
+                "fields": { "notaire_msg1_envoye": true }
+              },
+              "metadata": { "designer": { "x": 1800, "y": -200 } }
+            }
+          ],
+          "label": "Trigger: Message 1 — Dépôt J1",
+          "filter": {
+            "name": "Trigger MSG1",
+            "conditions": [[{ "a": "{{1.body.trigger}}", "o": "text:equal", "b": "MSG1_DEPOT" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 8,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "filterByFormula": "AND({docs_embarquement_complets}=TRUE(),{notaire_msg2_envoye}=FALSE())",
+                "maxRecords": 50
+              },
+              "metadata": { "designer": { "x": 600, "y": 0 } }
+            },
+            {
+              "id": 9,
+              "module": "builtin:BasicIterator",
+              "version": 1,
+              "parameters": {},
+              "mapper": { "array": "{{8.records}}" },
+              "metadata": { "designer": { "x": 900, "y": 0 } }
+            },
+            {
+              "id": 10,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
+              "mapper": {
+                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{9.value.fields.commune}}\",{zone_alger}=\"{{9.value.fields.zone_alger}}\"))",
+                "maxRecords": 1
+              },
+              "metadata": { "designer": { "x": 1200, "y": 0 } }
+            },
+            {
+              "id": 11,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{10.records[1].fields.whatsapp_notaire}}",
+                  "type": "buttons",
+                  "text": "🚢 *Libération 70% — Dossier {{9.value.fields.reference_dossier}}*\n\nMaître {{10.records[1].fields.nom_notaire}},\n\nLes documents d'embarquement ont été validés. Veuillez procéder à la libération des fonds.\n\n💰 *Ventilation du paiement 70% :*\n• Sourceur {{9.value.fields.nom_sourceur}} : {{formatNumber(9.value.fields.montant_70_sourceur; 0; ' ')}} DA\n• Commission SAYARA : {{formatNumber(9.value.fields.commission_da; 0; ' ')}} DA\n{{if(9.value.fields.penalites_sourceur_da > 0; concat('• Déduction pénalités : -', formatNumber(9.value.fields.penalites_sourceur_da; 0; ' '), ' DA'); '')}}\n\n💳 *TOTAL à virer : {{formatNumber(9.value.fields.montant_70_total - 9.value.fields.penalites_sourceur_da; 0; ' ')}} DA*\n\n💰 *Solde restant (30%) :* {{formatNumber(9.value.fields.total_livre_au_port * 0.3; 0; ' ')}} DA\n(à libérer à l'arrivée du navire)",
+                  "buttons": [
+                    { "id": "NOTAIRE_70_OK_{{9.value.fields.reference_dossier}}",    "title": "✅ Libéré" },
+                    { "id": "NOTAIRE_70_ALERT_{{9.value.fields.reference_dossier}}", "title": "⚠️ Problème" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": 0 } }
+            },
+            {
+              "id": 12,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{9.value.id}}",
+                "fields": { "notaire_msg2_envoye": true }
+              },
+              "metadata": { "designer": { "x": 1800, "y": 0 } }
+            }
+          ],
+          "label": "Trigger: Message 2 — Libération 70%",
+          "filter": {
+            "name": "Trigger MSG2",
+            "conditions": [[{ "a": "{{1.body.trigger}}", "o": "text:equal", "b": "MSG2_LIBERATION_70" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 13,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "filterByFormula": "AND({statut}=\"ARRIVE_PORT\",{notaire_msg3_envoye}=FALSE())",
+                "maxRecords": 50
+              },
+              "metadata": { "designer": { "x": 600, "y": 200 } }
+            },
+            {
+              "id": 14,
+              "module": "builtin:BasicIterator",
+              "version": 1,
+              "parameters": {},
+              "mapper": { "array": "{{13.records}}" },
+              "metadata": { "designer": { "x": 900, "y": 200 } }
+            },
+            {
+              "id": 15,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
+              "mapper": {
+                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{14.value.fields.commune}}\",{zone_alger}=\"{{14.value.fields.zone_alger}}\"))",
+                "maxRecords": 1
+              },
+              "metadata": { "designer": { "x": 1200, "y": 200 } }
+            },
+            {
+              "id": 16,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{15.records[1].fields.whatsapp_notaire}}",
+                  "type": "buttons",
+                  "text": "⚓ *Libération solde 30% — Dossier {{14.value.fields.reference_dossier}}*\n\nMaître {{15.records[1].fields.nom_notaire}},\n\nLe navire est arrivé au port d'Alger. Veuillez libérer le solde.\n\n💰 *Solde à libérer (30%) :*\n{{formatNumber(14.value.fields.total_livre_au_port * 0.3 - 14.value.fields.penalites_sourceur_da; 0; ' ')}} DA\n{{if(14.value.fields.penalites_sourceur_da > 0; concat('(après déduction pénalités : -', formatNumber(14.value.fields.penalites_sourceur_da; 0; ' '), ' DA)'); '')}}\n\nÀ la confirmation, le dossier sera clôturé.",
+                  "buttons": [
+                    { "id": "NOTAIRE_30_OK_{{14.value.fields.reference_dossier}}",    "title": "✅ Solde libéré" },
+                    { "id": "NOTAIRE_30_ALERT_{{14.value.fields.reference_dossier}}", "title": "⚠️ Problème" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": 200 } }
+            },
+            {
+              "id": 17,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{14.value.id}}",
+                "fields": { "notaire_msg3_envoye": true }
+              },
+              "metadata": { "designer": { "x": 1800, "y": 200 } }
+            }
+          ],
+          "label": "Trigger: Message 3 — Libération 30%",
+          "filter": {
+            "name": "Trigger MSG3",
+            "conditions": [[{ "a": "{{1.body.trigger}}", "o": "text:equal", "b": "MSG3_LIBERATION_30" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 18,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "filterByFormula": "{reference_dossier}=\"{{1.body.reference_dossier}}\"",
+                "maxRecords": 1
+              },
+              "metadata": { "designer": { "x": 600, "y": 400 } }
+            },
+            {
+              "id": 19,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
+              "mapper": {
+                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{18.records[1].fields.commune}}\",{zone_alger}=\"{{18.records[1].fields.zone_alger}}\"))",
+                "maxRecords": 1
+              },
+              "metadata": { "designer": { "x": 900, "y": 400 } }
+            },
+            {
+              "id": 20,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{19.records[1].fields.whatsapp_notaire}}",
+                  "type": "buttons",
+                  "text": "🔴 *Remboursement — Dossier {{18.records[1].fields.reference_dossier}}*\n\nMaître {{19.records[1].fields.nom_notaire}},\n\nLe dossier est annulé. Veuillez procéder au remboursement selon le motif :\n\n*Motif :* {{1.body.motif}}\n\n💰 *Montant à rembourser :* {{formatNumber(1.body.montant_remboursement; 0; ' ')}} DA\n*Bénéficiaire :* {{18.records[1].fields.prenom}} {{18.records[1].fields.nom}}\n\nFrais retenus :\n• Frais notaire : {{formatNumber(18.records[1].fields.frais_notaire; 0; ' ')}} DA\n• Frais dossier SAYARA : {{formatNumber(1.body.frais_sayara; 0; ' ')}} DA",
+                  "buttons": [
+                    { "id": "NOTAIRE_RBT_OK_{{18.records[1].fields.reference_dossier}}",    "title": "✅ Remboursement fait" },
+                    { "id": "NOTAIRE_RBT_ALERT_{{18.records[1].fields.reference_dossier}}", "title": "⚠️ Problème" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 1200, "y": 400 } }
+            }
+          ],
+          "label": "Trigger: Message 4 — Remboursement",
+          "filter": {
+            "name": "Trigger MSG4",
+            "conditions": [[{ "a": "{{1.body.trigger}}", "o": "text:equal", "b": "MSG4_REMBOURSEMENT" }]]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 21,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "filterByFormula": "{reference_dossier}=\"{{replace(replace(1.body.button_reply.id; 'NOTAIRE_DEPOT_OK_'; ''); 'NOTAIRE_70_OK_'; '')}}\"",
+                "maxRecords": 1
+              },
+              "metadata": { "designer": { "x": 600, "y": 600 } }
+            },
+            {
+              "id": 22,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": { "designer": { "x": 900, "y": 600 } },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 23,
+                      "module": "airtable:updateRecord",
+                      "version": 2,
+                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                      "mapper": {
+                        "id": "{{21.records[1].id}}",
+                        "fields": {
+                          "notaire_confirme_depot_j1": true,
+                          "timestamp_confirmation_depot": "{{now}}"
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1200, "y": 500 } }
+                    }
+                  ],
+                  "label": "Dépôt OK",
+                  "filter": {
+                    "name": "Bouton DEPOT_OK",
+                    "conditions": [[{ "a": "{{1.body.button_reply.id}}", "o": "text:startWith", "b": "NOTAIRE_DEPOT_OK_" }]]
+                  }
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 24,
+                      "module": "airtable:updateRecord",
+                      "version": 2,
+                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                      "mapper": {
+                        "id": "{{21.records[1].id}}",
+                        "fields": {
+                          "notaire_confirme_liberation_70": true,
+                          "montant_liberation_70_verse": "{{21.records[1].fields.montant_70_total}}"
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1200, "y": 600 } }
+                    }
+                  ],
+                  "label": "70% OK",
+                  "filter": {
+                    "name": "Bouton 70_OK",
+                    "conditions": [[{ "a": "{{1.body.button_reply.id}}", "o": "text:startWith", "b": "NOTAIRE_70_OK_" }]]
+                  }
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 25,
+                      "module": "airtable:updateRecord",
+                      "version": 2,
+                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                      "mapper": {
+                        "id": "{{21.records[1].id}}",
+                        "fields": {
+                          "notaire_confirme_liberation_30": true,
+                          "statut": "CLOTURE"
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1200, "y": 700 } }
+                    }
+                  ],
+                  "label": "30% OK → CLOTURE",
+                  "filter": {
+                    "name": "Bouton 30_OK",
+                    "conditions": [[{ "a": "{{1.body.button_reply.id}}", "o": "text:startWith", "b": "NOTAIRE_30_OK_" }]]
+                  }
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 26,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{COURTIER_WHATSAPP}}",
+                          "type": "text",
+                          "text": "🚨 *INCIDENT NOTAIRE — URGENT*\n\nLe notaire a signalé un problème.\nDossier : {{21.records[1].fields.reference_dossier}}\n\nContacter immédiatement : {{21.records[1].fields.whatsapp_notaire}}"
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1200, "y": 800 } }
+                    },
+                    {
+                      "id": 27,
+                      "module": "airtable:updateRecord",
+                      "version": 2,
+                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                      "mapper": {
+                        "id": "{{21.records[1].id}}",
+                        "fields": { "statut": "INCIDENT_DEPOT" }
+                      },
+                      "metadata": { "designer": { "x": 1500, "y": 800 } }
+                    }
+                  ],
+                  "label": "Alerte problème"
+                }
+              ]
+            }
+          ],
+          "label": "Réponse notaire (bouton)"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true
+    }
+  }
+}

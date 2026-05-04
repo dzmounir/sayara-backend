@@ -1,0 +1,167 @@
+{
+  "_meta": {
+    "template_engine": "carbone.io",
+    "version": "1.0",
+    "description": "Template reconnaissance de dette SAYARA — Airtable → Carbone.io",
+    "instructions": "Upload ce fichier sur https://studio.carbone.io/ et noter le templateId"
+  },
+  "document": {
+    "title": "RECONNAISSANCE DE DETTE ET MANDAT D'IMPORTATION",
+    "sections": [
+      {
+        "type": "header",
+        "content": "RECONNAISSANCE DE DETTE ET MANDAT D'IMPORTATION\nN° Dossier : {d.reference_dossier}\nDate : {d.date_acte}"
+      },
+      {
+        "type": "parties",
+        "title": "ENTRE LES SOUSSIGNÉS",
+        "acheteur": {
+          "label": "L'ACHETEUR (Débiteur)",
+          "fields": {
+            "nom_complet":      "{d.prenom_acheteur} {d.nom_acheteur}",
+            "date_naissance":   "{d.date_naissance}",
+            "numero_piece":     "{d.numero_piece}",
+            "adresse":          "{d.adresse}",
+            "telephone":        "{d.telephone_acheteur}"
+          }
+        },
+        "sourceur": {
+          "label": "LE SOURCEUR (Créancier)",
+          "fields": {
+            "nom_complet":      "{d.nom_sourceur}",
+            "pays":             "{d.pays_sourceur}",
+            "adresse":          "{d.adresse_sourceur}",
+            "reference_contrat": "{d.reference_contrat_sourceur}"
+          }
+        },
+        "garant": {
+          "label": "LA SOCIÉTÉ SAYARA (Intermédiaire & Garant)",
+          "denomination": "SAYARA SARL",
+          "rc": "{d.rc_sayara}",
+          "adresse": "{d.adresse_sayara}"
+        }
+      },
+      {
+        "type": "objet",
+        "title": "OBJET DE LA RECONNAISSANCE DE DETTE",
+        "vehicule": {
+          "marque":               "{d.marque}",
+          "modele":               "{d.modele}",
+          "annee":                "{d.annee}",
+          "finition":             "{d.finition}",
+          "boite_vitesse":        "{d.boite_vitesse}",
+          "couleur_principale":   "{d.couleur_1}",
+          "couleur_alternative":  "{d.couleur_2}",
+          "pays_origine":         "{d.pays_origine_vehicule}",
+          "pays_fabrication":     "{d.pays_fabrication}",
+          "port_embarquement":    "{d.port_embarquement}"
+        }
+      },
+      {
+        "type": "montants",
+        "title": "MONTANTS ET MODALITÉS DE PAIEMENT",
+        "montant_total": {
+          "label": "Montant total dû",
+          "value": "{d.montant_total} DA",
+          "note": "Inclut prix véhicule, transport, assurance et frais administratifs"
+        },
+        "versement_70": {
+          "label": "Premier versement (70%) — À l'embarquement",
+          "value": "{d.montant_70} DA",
+          "condition": "Libéré sur présentation des documents d'embarquement validés par SAYARA"
+        },
+        "versement_30": {
+          "label": "Solde (30%) — À l'arrivée au port d'Alger",
+          "value": "{d.montant_30} DA",
+          "condition": "Libéré sur confirmation d'arrivée du navire au port d'Alger"
+        },
+        "notaire": {
+          "label": "Notaire séquestre",
+          "nom":    "{d.nom_notaire}",
+          "adresse": "{d.adresse_etude}",
+          "ville":   "{d.ville_notaire}"
+        }
+      },
+      {
+        "type": "clauses",
+        "title": "CLAUSES ET CONDITIONS",
+        "clauses": [
+          {
+            "numero": "1",
+            "titre": "Engagement du débiteur",
+            "texte": "L'Acheteur s'engage irrévocablement à régler les sommes dues selon l'échéancier défini ci-dessus. Les fonds sont déposés en séquestre chez le notaire désigné dès la signature du présent acte."
+          },
+          {
+            "numero": "2",
+            "titre": "Libération des fonds 70%",
+            "texte": "Le premier versement de {d.montant_70} DA sera libéré par le notaire au profit du Sourceur dès réception et validation par SAYARA des documents suivants : facture d'achat, carte grise originale, Bill of Lading, certificat d'assurance maritime, et photos du véhicule avec VIN visible."
+          },
+          {
+            "numero": "3",
+            "titre": "Libération du solde 30%",
+            "texte": "Le solde de {d.montant_30} DA sera libéré par le notaire au profit du Sourceur dès confirmation par le système MarineTraffic de l'arrivée du navire dans la zone portuaire d'Alger, et sur instruction de SAYARA."
+          },
+          {
+            "numero": "4",
+            "titre": "Cas de non-livraison",
+            "texte": "En cas de non-livraison du véhicule imputable au Sourceur dans un délai de 120 jours à compter de la date du présent acte, le notaire procédera au remboursement intégral de l'Acheteur, déduction faite des frais notariaux. SAYARA se réserve le droit de recours contre le Sourceur."
+          },
+          {
+            "numero": "5",
+            "titre": "Clause de substitution",
+            "texte": "En cas d'indisponibilité du véhicule commandé, SAYARA pourra, avec accord préalable de l'Acheteur, proposer un véhicule de caractéristiques équivalentes ou supérieures sans surcoût pour l'Acheteur."
+          },
+          {
+            "numero": "6",
+            "titre": "Pénalités de retard",
+            "texte": "Passé un délai de 10 jours ouvrables à compter de la confirmation de commande sans réception des documents d'embarquement, des pénalités de 10 000 DA par jour de retard seront déduites du paiement au Sourceur."
+          },
+          {
+            "numero": "7",
+            "titre": "Non-conformité du véhicule",
+            "texte": "Si le véhicule livré ne correspond pas aux caractéristiques contractuelles (modèle, finition, année), SAYARA s'engage à corriger la situation dans un délai de 30 jours ou à procéder au remboursement intégral de l'Acheteur."
+          }
+        ]
+      },
+      {
+        "type": "signatures",
+        "title": "SIGNATURES",
+        "signataires": [
+          { "role": "L'Acheteur",    "nom": "{d.prenom_acheteur} {d.nom_acheteur}", "date": "{d.date_acte}" },
+          { "role": "Le Sourceur",   "nom": "{d.nom_sourceur}",                     "date": "{d.date_acte}" },
+          { "role": "SAYARA",        "nom": "Représentant légal",                   "date": "{d.date_acte}" },
+          { "role": "Le Notaire",    "nom": "Maître {d.nom_notaire}",               "date": "{d.date_acte}" }
+        ]
+      }
+    ]
+  },
+  "variables": {
+    "nom_acheteur":          "string — Nom de famille de l'acheteur",
+    "prenom_acheteur":       "string — Prénom de l'acheteur",
+    "date_naissance":        "string — Date de naissance (DD/MM/YYYY)",
+    "numero_piece":          "string — Numéro pièce d'identité",
+    "adresse":               "string — Adresse complète de l'acheteur",
+    "telephone_acheteur":    "string — Numéro WhatsApp",
+    "nom_sourceur":          "string — Nom complet du sourceur",
+    "pays_sourceur":         "string — Pays d'opération du sourceur",
+    "adresse_sourceur":      "string — Adresse du sourceur",
+    "marque":                "string — Marque du véhicule",
+    "modele":                "string — Modèle du véhicule",
+    "annee":                 "number — Année du véhicule",
+    "finition":              "string — Référence finition (SAY-V1 à SAY-V4)",
+    "boite_vitesse":         "string — AUTO | MANUELLE",
+    "couleur_1":             "string — Couleur principale",
+    "couleur_2":             "string — Couleur alternative (optionnel)",
+    "pays_origine_vehicule": "string — Pays d'exportation",
+    "pays_fabrication":      "string — Pays de fabrication",
+    "port_embarquement":     "string — Port de départ",
+    "montant_total":         "number — Montant total en DA",
+    "montant_70":            "number — 70% du montant total",
+    "montant_30":            "number — 30% du montant total",
+    "nom_notaire":           "string — Nom du notaire",
+    "adresse_etude":         "string — Adresse de l'étude notariale",
+    "ville_notaire":         "string — Ville du notaire",
+    "reference_dossier":     "string — Référence ex. SAY-2024-0042",
+    "date_acte":             "string — Date de signature (DD/MM/YYYY)"
+  }
+}

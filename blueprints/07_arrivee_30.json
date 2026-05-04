@@ -1,0 +1,178 @@
+{
+  "name": "SAYARA — 07 Arrivée Port 30%",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 2,
+      "parameters": { "hook": "{{HOOK_ID_MARINETRAFFIC}}", "maxResults": 1 },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } },
+      "_comment": "Déclenché par webhook MarineTraffic quand navire entre en zone port d'Alger"
+    },
+    {
+      "id": 2,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+      "mapper": {
+        "filterByFormula": "AND({numero_imo}=\"{{1.body.imo}}\",{statut}=\"EN_TRANSIT\")",
+        "maxRecords": 1
+      },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 600, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 4,
+              "module": "airtable:searchRecords",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
+              "mapper": {
+                "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{2.records[1].fields.commune}}\",{zone_alger}=\"{{2.records[1].fields.zone_alger}}\"))",
+                "maxRecords": 1
+              },
+              "metadata": { "designer": { "x": 900, "y": 0 } }
+            },
+            {
+              "id": 5,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{4.records[1].fields.whatsapp_notaire}}",
+                  "type": "text",
+                  "text": "⚓ *Navire arrivé — Libération solde 30% — Dossier {{2.records[1].fields.reference_dossier}}*\n\nMaître {{4.records[1].fields.nom_notaire}},\n\nLe navire transportant le véhicule est arrivé au port d'Alger.\n\n🚗 {{2.records[1].fields.marque}} {{2.records[1].fields.modele}} — N° conteneur : {{2.records[1].fields.numero_conteneur}}\n👤 Client : {{2.records[1].fields.prenom}} {{2.records[1].fields.nom}}\n\n💰 *Solde à libérer (30%) :*\n{{formatNumber(2.records[1].fields.montant_30_total; 0; \" \")}} DA\n\nMerci de procéder à la libération du solde."
+                }
+              },
+              "metadata": { "designer": { "x": 1200, "y": -100 } }
+            },
+            {
+              "id": 6,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{2.records[1].fields.telephone}}",
+                  "type": "text",
+                  "text": "🎉 *Votre véhicule est arrivé au port d'Alger !*\n\nBonjour {{2.records[1].fields.prenom}},\n\nVotre *{{2.records[1].fields.marque}} {{2.records[1].fields.modele}}* est bien arrivé au port d'Alger. 🇩🇿\n\n📦 N° conteneur : {{2.records[1].fields.numero_conteneur}}\n\nNous vous tiendrons informé des étapes de dédouanement. Notre équipe prend en charge toutes les démarches.\n\nMerci pour votre confiance ! 🙏"
+                }
+              },
+              "metadata": { "designer": { "x": 1200, "y": 0 } }
+            },
+            {
+              "id": 7,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{2.records[1].fields.telephone_sourceur}}",
+                  "type": "text",
+                  "text": "⚓ *Navire arrivé — {{2.records[1].fields.reference_dossier}}*\n\nLe navire est arrivé au port d'Alger.\n\n💰 Libération solde 30% en cours.\n\nMontant : {{formatNumber(2.records[1].fields.montant_30_sourceur; 0; \" \")}} DA"
+                }
+              },
+              "metadata": { "designer": { "x": 1200, "y": 100 } }
+            },
+            {
+              "id": 8,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{2.records[1].id}}",
+                "fields": {
+                  "statut": "ARRIVE_PORT",
+                  "date_arrivee_port": "{{now}}"
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": 0 } }
+            },
+            {
+              "id": 9,
+              "module": "tools:SetVariables",
+              "version": 1,
+              "parameters": {},
+              "mapper": {
+                "variables": [
+                  { "name": "avis_j1",  "value": "{{addDays(now; 1)}}" },
+                  { "name": "avis_j7",  "value": "{{addDays(now; 7)}}" },
+                  { "name": "avis_j14", "value": "{{addDays(now; 14)}}" }
+                ]
+              },
+              "metadata": { "designer": { "x": 1800, "y": 0 } }
+            },
+            {
+              "id": 10,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{2.records[1].id}}",
+                "fields": {
+                  "date_relance_avis_j1":  "{{9.avis_j1}}",
+                  "date_relance_avis_j7":  "{{9.avis_j7}}",
+                  "date_relance_avis_j14": "{{9.avis_j14}}"
+                }
+              },
+              "metadata": { "designer": { "x": 2100, "y": 0 } }
+            }
+          ],
+          "label": "Dossier trouvé"
+        },
+        {
+          "flow": [
+            {
+              "id": 11,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{COURTIER_WHATSAPP}}",
+                  "type": "text",
+                  "text": "⚠️ *MarineTraffic webhook — IMO introuvable*\n\nIMO reçu : {{1.body.imo}}\nAucun dossier EN_TRANSIT avec ce numéro IMO.\n\nVérifier manuellement."
+                }
+              },
+              "metadata": { "designer": { "x": 900, "y": 200 } }
+            }
+          ],
+          "label": "Dossier non trouvé"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true
+    }
+  }
+}

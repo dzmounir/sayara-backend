@@ -1,0 +1,173 @@
+{
+  "name": "SAYARA — 01 Accueil",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 2,
+      "parameters": { "hook": "{{HOOK_ID_ACCUEIL}}", "maxResults": 1 },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": {
+        "base": "{{AIRTABLE_BASE_ID}}",
+        "table": "DOSSIERS"
+      },
+      "mapper": {
+        "filterByFormula": "{{1.body.from}}",
+        "filterField": "telephone",
+        "maxRecords": 1
+      },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 600, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 4,
+              "module": "airtable:createRecord",
+              "version": 2,
+              "parameters": {
+                "base": "{{AIRTABLE_BASE_ID}}",
+                "table": "DOSSIERS"
+              },
+              "mapper": {
+                "fields": {
+                  "telephone": "{{1.body.from}}",
+                  "statut": "NOUVEAU",
+                  "date_creation": "{{now}}"
+                }
+              },
+              "metadata": { "designer": { "x": 900, "y": -150 } }
+            },
+            {
+              "id": 5,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "buttons",
+                  "text": "🚗 Bienvenue chez *SAYARA* !\n\nVotre partenaire pour l'importation de véhicules neufs depuis l'Arabie Saoudite.\n\nChoisissez votre langue / اختر لغتك / Choose your language :",
+                  "buttons": [
+                    { "id": "LANG_AR", "title": "🇩🇿 العربية" },
+                    { "id": "LANG_FR", "title": "🇫🇷 Français" },
+                    { "id": "LANG_EN", "title": "🇬🇧 English" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 1200, "y": -150 } }
+            }
+          ],
+          "label": "Nouveau client",
+          "filter": {
+            "name": "Nouveau client",
+            "conditions": [
+              [{ "a": "{{2.records[].id}}", "o": "text:notexist", "b": "" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 6,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": { "designer": { "x": 900, "y": 150 } },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 7,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{1.body.from}}",
+                          "type": "buttons",
+                          "text": "👋 Bon retour ! Votre dossier *{{2.records[1].fields.reference_dossier}}* est en cours.\n\nQue souhaitez-vous faire ?",
+                          "buttons": [
+                            { "id": "STATUT_DOSSIER", "title": "📋 Mon statut" },
+                            { "id": "NOUVEAU_DEVIS",  "title": "🚗 Nouveau devis" },
+                            { "id": "PARLER_CONSEILLER", "title": "💬 Un conseiller" }
+                          ]
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1200, "y": 50 } }
+                    }
+                  ],
+                  "label": "Client avec dossier actif",
+                  "filter": {
+                    "name": "Client avec dossier actif",
+                    "conditions": [
+                      [{ "a": "{{2.records[1].fields.statut}}", "o": "text:notcontain", "b": "CLOTURE" }]
+                    ]
+                  }
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 8,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{1.body.from}}",
+                          "type": "buttons",
+                          "text": "🎉 Bienvenue à nouveau ! Votre précédent véhicule a bien été livré.\n\nEnvie d'en importer un autre ?",
+                          "buttons": [
+                            { "id": "LANG_FR", "title": "🚗 Nouveau véhicule" },
+                            { "id": "PARLER_CONSEILLER", "title": "💬 Un conseiller" }
+                          ]
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1200, "y": 250 } }
+                    }
+                  ],
+                  "label": "Client CLOTURE / ancien"
+                }
+              ]
+            }
+          ],
+          "label": "Client existant"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true
+    }
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "name": "SAYARA — 06 Embarquement 70%",
+  "flow": [
+    {
+      "id": 1,
+      "module": "airtable:watchRecords",
+      "version": 2,
+      "parameters": {
+        "base": "{{AIRTABLE_BASE_ID}}",
+        "table": "DOSSIERS",
+        "watchField": "docs_embarquement_complets",
+        "triggerOn": "created_and_updated"
+      },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 300, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 3,
+              "module": "googleDrive:listFiles",
+              "version": 3,
+              "parameters": { "scope": "drive" },
+              "mapper": {
+                "q": "'{{GDRIVE_FOLDER_DOSSIERS}}/{{1.fields.reference_dossier}}' in parents",
+                "fields": "files(id,name,webViewLink)"
+              },
+              "metadata": { "designer": { "x": 600, "y": -100 } }
+            },
+            {
+              "id": 4,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": { "designer": { "x": 900, "y": -100 } },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 5,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{COURTIER_WHATSAPP}}",
+                          "type": "text",
+                          "text": "⚠️ *Documents manquants — Dossier {{1.fields.reference_dossier}}*\n\nLe flag docs_embarquement_complets=TRUE a été déclenché mais des documents sont absents dans Drive.\n\n📁 Vérifier : /Sayara/Dossiers/{{1.fields.reference_dossier}}/\n\nDéclencher manuellement après vérification."
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1200, "y": -200 } }
+                    }
+                  ],
+                  "label": "Documents manquants",
+                  "filter": {
+                    "name": "Moins de 5 docs",
+                    "conditions": [
+                      [{ "a": "{{length(3.files[])}}", "o": "number:less", "b": "5" }]
+                    ]
+                  }
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 6,
+                      "module": "airtable:searchRecords",
+                      "version": 2,
+                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "NOTAIRES_PAR_COMMUNE" },
+                      "mapper": {
+                        "filterByFormula": "AND({actif}=TRUE(),OR({commune}=\"{{1.fields.commune}}\",{zone_alger}=\"{{1.fields.zone_alger}}\"))",
+                        "maxRecords": 1
+                      },
+                      "metadata": { "designer": { "x": 1200, "y": 0 } }
+                    },
+                    {
+                      "id": 7,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{6.records[1].fields.whatsapp_notaire}}",
+                          "type": "text",
+                          "text": "🚢 *Libération 70% — Dossier {{1.fields.reference_dossier}}*\n\nMaître {{6.records[1].fields.nom_notaire}},\n\nLes documents d'embarquement du véhicule ci-dessous ont été validés.\n\n🚗 {{1.fields.marque}} {{1.fields.modele}} — {{1.fields.variante_choisie}}\n👤 Client : {{1.fields.prenom}} {{1.fields.nom}}\n\n💰 *Montant à libérer (70%) :*\n• Au sourceur : {{formatNumber(1.fields.montant_70_sourceur; 0; \" \")}} DA\n• Commission SAYARA : {{formatNumber(1.fields.commission_da; 0; \" \")}} DA\n• *TOTAL : {{formatNumber(1.fields.montant_70_total; 0; \" \")}} DA*\n\nMerci de confirmer la libération de ces fonds."
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1500, "y": 0 } }
+                    },
+                    {
+                      "id": 8,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{1.fields.telephone}}",
+                          "type": "text",
+                          "text": "🚢 *Votre véhicule est embarqué !*\n\nBonne nouvelle {{1.fields.prenom}}, votre *{{1.fields.marque}} {{1.fields.modele}}* a bien été chargé sur le navire.\n\n🌍 Pays d'origine : {{1.fields.pays_origine}}\n⚓ Port de départ : {{1.fields.port_embarquement}}\n\nSuivez votre véhicule en temps réel :\n🔗 https://www.marinetraffic.com/en/ais/home/centerx:2.2/centery:36.7\n\nNous vous préviendrons dès l'arrivée au port d'Alger. 🇩🇿"
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1500, "y": 150 } }
+                    },
+                    {
+                      "id": 9,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{1.fields.telephone_sourceur}}",
+                          "type": "text",
+                          "text": "✅ *Libération 70% confirmée — {{1.fields.reference_dossier}}*\n\nLes fonds ont été instruits chez le notaire.\n\n💰 Votre part : {{formatNumber(1.fields.montant_70_sourceur; 0; \" \")}} DA\n\nMerci pour votre professionnalisme."
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1500, "y": 300 } }
+                    },
+                    {
+                      "id": 10,
+                      "module": "airtable:updateRecord",
+                      "version": 2,
+                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                      "mapper": {
+                        "id": "{{1.id}}",
+                        "fields": { "statut": "EN_TRANSIT", "date_embarquement": "{{now}}" }
+                      },
+                      "metadata": { "designer": { "x": 1800, "y": 150 } }
+                    }
+                  ],
+                  "label": "5+ docs présents — OK"
+                }
+              ]
+            }
+          ],
+          "label": "docs_embarquement_complets = TRUE",
+          "filter": {
+            "name": "Flag docs complets",
+            "conditions": [
+              [{ "a": "{{1.fields.docs_embarquement_complets}}", "o": "boolean:equal", "b": true }]
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true
+    }
+  }
+}

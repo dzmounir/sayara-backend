@@ -1,0 +1,419 @@
+{
+  "name": "SAYARA — 09 Documents Sourceur",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 2,
+      "parameters": { "hook": "{{HOOK_ID_DOCUMENTS}}", "maxResults": 1 },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "SOURCEURS" },
+      "mapper": {
+        "filterByFormula": "AND({telephone}=\"{{1.body.from}}\",{actif}=TRUE())",
+        "maxRecords": 1
+      },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 600, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 4,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": { "designer": { "x": 900, "y": -100 } },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 5,
+                      "module": "airtable:searchRecords",
+                      "version": 2,
+                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                      "mapper": {
+                        "filterByFormula": "AND({reference_dossier}=\"{{replace(1.body.text;'DOSSIER ';'')}}\",{sourceur_assigne}=\"{{2.records[1].fields.sourceur_id}}\")",
+                        "maxRecords": 1
+                      },
+                      "metadata": { "designer": { "x": 1200, "y": -200 } }
+                    },
+                    {
+                      "id": 6,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{1.body.from}}",
+                          "type": "text",
+                          "text": "📋 *Dossier {{5.records[1].fields.reference_dossier}} identifié*\n\n🚗 {{5.records[1].fields.marque}} {{5.records[1].fields.modele}} — {{5.records[1].fields.variante_choisie}}\n👤 Client : {{5.records[1].fields.prenom}} {{5.records[1].fields.nom}}\n\nDocuments requis (5 obligatoires) :\n\n1️⃣ Facture d'achat\n2️⃣ Carte grise KSA\n3️⃣ Bill of Lading\n4️⃣ Certificat assurance maritime\n5️⃣ Photos du véhicule\n\n📩 Envoyez-les un par un dans cet ordre.\n*Étape en cours : {{5.records[1].fields.docs_etape_en_cours}}/5*"
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1500, "y": -200 } }
+                    },
+                    {
+                      "id": 7,
+                      "module": "airtable:updateRecord",
+                      "version": 2,
+                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                      "mapper": {
+                        "id": "{{5.records[1].id}}",
+                        "fields": { "docs_etape_en_cours": 1 }
+                      },
+                      "metadata": { "designer": { "x": 1800, "y": -200 } }
+                    }
+                  ],
+                  "label": "Message DOSSIER SAY-XXXX",
+                  "filter": {
+                    "name": "Commande DOSSIER",
+                    "conditions": [
+                      [{ "a": "{{1.body.text}}", "o": "text:startWith", "b": "DOSSIER SAY-" }]
+                    ]
+                  }
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 8,
+                      "module": "airtable:searchRecords",
+                      "version": 2,
+                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                      "mapper": {
+                        "filterByFormula": "AND({sourceur_assigne}=\"{{2.records[1].fields.sourceur_id}}\",{docs_etape_en_cours}>0,{docs_embarquement_complets}=FALSE())",
+                        "maxRecords": 1
+                      },
+                      "metadata": { "designer": { "x": 1200, "y": 0 } }
+                    },
+                    {
+                      "id": 9,
+                      "module": "builtin:BasicRouter",
+                      "version": 1,
+                      "parameters": {},
+                      "mapper": {},
+                      "metadata": { "designer": { "x": 1500, "y": 0 } },
+                      "routes": [
+                        {
+                          "flow": [
+                            {
+                              "id": 10,
+                              "module": "http:ActionSendData",
+                              "version": 3,
+                              "parameters": { "handleErrors": false },
+                              "mapper": {
+                                "url": "https://api.anthropic.com/v1/messages",
+                                "method": "POST",
+                                "headers": [
+                                  { "name": "x-api-key",        "value": "{{ANTHROPIC_API_KEY}}" },
+                                  { "name": "anthropic-version", "value": "2023-06-01" },
+                                  { "name": "Content-Type",       "value": "application/json" }
+                                ],
+                                "body": {
+                                  "model": "claude-haiku-4-5-20251001",
+                                  "max_tokens": 512,
+                                  "messages": [
+                                    {
+                                      "role": "user",
+                                      "content": "{{if(8.records[1].fields.docs_etape_en_cours == 1; concat('Analyse cette facture d\\'achat de véhicule. Vérifie que le nom du client \"', 8.records[1].fields.nom, ' ', 8.records[1].fields.prenom, '\" y figure. Extrait le VIN. Réponds en JSON: {\"nom_client_present\": true/false, \"vin_extrait\": \"...\", \"erreur\": null}'); if(8.records[1].fields.docs_etape_en_cours == 2; concat('Analyse cette carte grise KSA. Vérifie que le nom du client \"', 8.records[1].fields.nom, ' ', 8.records[1].fields.prenom, '\" y figure. Extrait le VIN. Réponds en JSON: {\"nom_client_present\": true/false, \"vin_extrait\": \"...\", \"erreur\": null}'); if(8.records[1].fields.docs_etape_en_cours == 3; 'Analyse ce Bill of Lading. Extrait: le numéro de conteneur, le pays d\\'origine, le port de destination (doit être Alger), la date d\\'embarquement. Réponds en JSON: {\"numero_conteneur\": \"...\", \"pays_origine\": \"...\", \"port_destination\": \"...\", \"date_embarquement\": \"...\", \"route_valide\": true/false, \"erreur\": null}'; if(8.records[1].fields.docs_etape_en_cours == 4; concat('Analyse ce certificat d\\'assurance maritime. Vérifie: (1) montant couvert >= ', round(8.records[1].fields.prix_vehicule_affiche * 0.7; 0), ' DA, (2) couvre substitution/fraude/dommages transit. Réponds en JSON: {\"montant_couvert\": 0, \"couvre_montant_minimum\": true/false, \"couvre_substitution\": true/false, \"couvre_fraude\": true/false, \"couvre_dommages\": true/false, \"erreur\": null}'); 'Analyse ces photos de véhicule. Tente de lire le VIN sur le tableau de bord ou le montant de porte. Réponds en JSON: {\"vin_lu\": \"...ou null si non lisible\", \"lisible\": true/false, \"erreur\": null}')))))}"
+                                    }
+                                  ]
+                                }
+                              },
+                              "metadata": { "designer": { "x": 1800, "y": -100 } }
+                            },
+                            {
+                              "id": 11,
+                              "module": "json:ParseJSON",
+                              "version": 1,
+                              "parameters": {},
+                              "mapper": { "json": "{{10.data.content[1].text}}" },
+                              "metadata": { "designer": { "x": 2100, "y": -100 } }
+                            },
+                            {
+                              "id": 12,
+                              "module": "builtin:BasicRouter",
+                              "version": 1,
+                              "parameters": {},
+                              "mapper": {},
+                              "metadata": { "designer": { "x": 2400, "y": -100 } },
+                              "routes": [
+                                {
+                                  "flow": [
+                                    {
+                                      "id": 13,
+                                      "module": "googleDrive:uploadFile",
+                                      "version": 3,
+                                      "parameters": { "scope": "drive" },
+                                      "mapper": {
+                                        "folderId": "{{GDRIVE_FOLDER_DOSSIERS}}/{{8.records[1].fields.reference_dossier}}",
+                                        "fileName": "{{if(8.records[1].fields.docs_etape_en_cours == 1; 'facture_achat'; if(8.records[1].fields.docs_etape_en_cours == 2; 'carte_grise_ksa'; if(8.records[1].fields.docs_etape_en_cours == 3; 'bill_of_lading'; if(8.records[1].fields.docs_etape_en_cours == 4; 'assurance_maritime'; 'photos_vehicule')))))}}_{{8.records[1].fields.reference_dossier}}.pdf",
+                                        "data": "{{1.body.media.id}}"
+                                      },
+                                      "metadata": { "designer": { "x": 2700, "y": -200 } }
+                                    },
+                                    {
+                                      "id": 14,
+                                      "module": "airtable:updateRecord",
+                                      "version": 2,
+                                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                                      "mapper": {
+                                        "id": "{{8.records[1].id}}",
+                                        "fields": {
+                                          "{{if(8.records[1].fields.docs_etape_en_cours == 1; 'lien_facture_achat'; if(8.records[1].fields.docs_etape_en_cours == 2; 'lien_carte_grise_ksa'; if(8.records[1].fields.docs_etape_en_cours == 3; 'lien_bill_of_lading'; if(8.records[1].fields.docs_etape_en_cours == 4; 'lien_assurance_maritime'; 'liens_photos_vehicule')))))}": "{{13.webViewLink}}",
+                                          "docs_etape_en_cours": "{{8.records[1].fields.docs_etape_en_cours + 1}}"
+                                        }
+                                      },
+                                      "metadata": { "designer": { "x": 3000, "y": -200 } }
+                                    },
+                                    {
+                                      "id": 15,
+                                      "module": "http:ActionSendData",
+                                      "version": 3,
+                                      "parameters": { "handleErrors": false },
+                                      "mapper": {
+                                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                                        "method": "POST",
+                                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                                        "body": {
+                                          "to": "{{1.body.from}}",
+                                          "type": "text",
+                                          "text": "✅ *Document {{8.records[1].fields.docs_etape_en_cours}}/5 validé !*\n\n{{if(8.records[1].fields.docs_etape_en_cours + 1 <= 5; concat('Envoyez maintenant le document ', 8.records[1].fields.docs_etape_en_cours + 1, '/5 : ', if(8.records[1].fields.docs_etape_en_cours == 1; '📋 Carte grise KSA'; if(8.records[1].fields.docs_etape_en_cours == 2; '🚢 Bill of Lading'; if(8.records[1].fields.docs_etape_en_cours == 3; '🛡️ Certificat assurance maritime'; '📸 Photos du véhicule')))); '🎉 Tous les documents ont été reçus ! En attente de validation finale.')}}"
+                                        }
+                                      },
+                                      "metadata": { "designer": { "x": 3000, "y": 0 } }
+                                    }
+                                  ],
+                                  "label": "Document valide",
+                                  "filter": {
+                                    "name": "Pas d'erreur IA",
+                                    "conditions": [
+                                      [{ "a": "{{11.erreur}}", "o": "text:notexist", "b": "" }]
+                                    ]
+                                  }
+                                },
+                                {
+                                  "flow": [
+                                    {
+                                      "id": 16,
+                                      "module": "http:ActionSendData",
+                                      "version": 3,
+                                      "parameters": { "handleErrors": false },
+                                      "mapper": {
+                                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                                        "method": "POST",
+                                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                                        "body": {
+                                          "to": "{{1.body.from}}",
+                                          "type": "text",
+                                          "text": "⚠️ *Problème avec ce document*\n\n{{11.erreur}}\n\nMerci de renvoyer une version corrigée. (Essai {{8.records[1].fields.nb_essais_doc + 1}}/2)"
+                                        }
+                                      },
+                                      "metadata": { "designer": { "x": 2700, "y": 100 } }
+                                    },
+                                    {
+                                      "id": 17,
+                                      "module": "builtin:BasicRouter",
+                                      "version": 1,
+                                      "parameters": {},
+                                      "mapper": {},
+                                      "metadata": { "designer": { "x": 3000, "y": 100 } },
+                                      "routes": [
+                                        {
+                                          "flow": [
+                                            {
+                                              "id": 18,
+                                              "module": "http:ActionSendData",
+                                              "version": 3,
+                                              "parameters": { "handleErrors": false },
+                                              "mapper": {
+                                                "url": "https://{{SERVER_HOST}}/make-trigger",
+                                                "method": "POST",
+                                                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                                                "body": {
+                                                  "to": "{{COURTIER_WHATSAPP}}",
+                                                  "type": "text",
+                                                  "text": "🔴 *Vérification manuelle requise*\n\nDossier : {{8.records[1].fields.reference_dossier}}\nSourceur : {{2.records[1].fields.nom}}\nDocument : {{8.records[1].fields.docs_etape_en_cours}}/5\nErreur IA : {{11.erreur}}\n\n2 essais épuisés — vérification manuelle nécessaire."
+                                                }
+                                              },
+                                              "metadata": { "designer": { "x": 3300, "y": 50 } }
+                                            }
+                                          ],
+                                          "label": "2 essais épuisés",
+                                          "filter": {
+                                            "name": "Max essais",
+                                            "conditions": [
+                                              [{ "a": "{{8.records[1].fields.nb_essais_doc}}", "o": "number:greater", "b": "0" }]
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "label": "Document invalide"
+                                }
+                              ]
+                            },
+                            {
+                              "id": 19,
+                              "module": "builtin:BasicRouter",
+                              "version": 1,
+                              "parameters": {},
+                              "mapper": {},
+                              "metadata": { "designer": { "x": 2400, "y": 200 } },
+                              "routes": [
+                                {
+                                  "flow": [
+                                    {
+                                      "id": 20,
+                                      "module": "http:ActionSendData",
+                                      "version": 3,
+                                      "parameters": { "handleErrors": false },
+                                      "mapper": {
+                                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                                        "method": "POST",
+                                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                                        "body": {
+                                          "to": "{{COURTIER_WHATSAPP}}",
+                                          "type": "buttons",
+                                          "text": "🔍 *Validation courtier requise — Dossier {{8.records[1].fields.reference_dossier}}*\n\n✅ Les 5 documents obligatoires ont été reçus et validés par IA.\n\n📋 *Résumé des vérifications :*\n• VIN facture / carte grise : {{if(8.records[1].fields.vin_facture == 8.records[1].fields.vin_carte_grise; '✅ Correspondant'; '❌ DIVERGENT')}}\n• Conteneur : {{if(8.records[1].fields.numero_conteneur; '✅ ' & 8.records[1].fields.numero_conteneur; '❓ Non vérifié')}}\n• Assurance : ✅ Validée\n\n📁 Documents :\n• Facture : {{8.records[1].fields.lien_facture_achat}}\n• Carte grise : {{8.records[1].fields.lien_carte_grise_ksa}}\n• BL : {{8.records[1].fields.lien_bill_of_lading}}\n• Assurance : {{8.records[1].fields.lien_assurance_maritime}}\n• Photos : {{8.records[1].fields.liens_photos_vehicule}}\n\n💰 *Montant à libérer (70%) :*\n{{formatNumber(8.records[1].fields.montant_70_total; 0; ' ')}} DA\n\nValidez-vous la libération des fonds ?",
+                                          "buttons": [
+                                            { "id": "VALIDER_LIBERATION_{{8.records[1].fields.reference_dossier}}", "title": "✅ Valider libération" },
+                                            { "id": "PROBLEME_DETECTE_{{8.records[1].fields.reference_dossier}}", "title": "⚠️ Problème détecté" }
+                                          ]
+                                        }
+                                      },
+                                      "metadata": { "designer": { "x": 2700, "y": 200 } }
+                                    }
+                                  ],
+                                  "label": "5 docs complets → confirmation courtier",
+                                  "filter": {
+                                    "name": "5 docs validés",
+                                    "conditions": [
+                                      [{ "a": "{{8.records[1].fields.docs_etape_en_cours + 1}}", "o": "number:greater", "b": "5" }]
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          ],
+                          "label": "Document reçu (image/doc)"
+                        },
+                        {
+                          "flow": [
+                            {
+                              "id": 21,
+                              "module": "builtin:BasicRouter",
+                              "version": 1,
+                              "parameters": {},
+                              "mapper": {},
+                              "metadata": { "designer": { "x": 1800, "y": 200 } },
+                              "routes": [
+                                {
+                                  "flow": [
+                                    {
+                                      "id": 22,
+                                      "module": "airtable:updateRecord",
+                                      "version": 2,
+                                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                                      "mapper": {
+                                        "id": "{{8.records[1].id}}",
+                                        "fields": {
+                                          "docs_embarquement_complets": true,
+                                          "statut": "DOCUMENTS_RECUS"
+                                        }
+                                      },
+                                      "metadata": { "designer": { "x": 2100, "y": 150 } }
+                                    }
+                                  ],
+                                  "label": "Courtier valide",
+                                  "filter": {
+                                    "name": "VALIDER_LIBERATION",
+                                    "conditions": [
+                                      [{ "a": "{{1.body.button_reply.id}}", "o": "text:startWith", "b": "VALIDER_LIBERATION" }]
+                                    ]
+                                  }
+                                },
+                                {
+                                  "flow": [
+                                    {
+                                      "id": 23,
+                                      "module": "airtable:updateRecord",
+                                      "version": 2,
+                                      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+                                      "mapper": {
+                                        "id": "{{8.records[1].id}}",
+                                        "fields": { "statut": "INCIDENT_DOCUMENTS" }
+                                      },
+                                      "metadata": { "designer": { "x": 2100, "y": 250 } }
+                                    }
+                                  ],
+                                  "label": "Courtier signale problème"
+                                }
+                              ]
+                            }
+                          ],
+                          "label": "Réponse courtier (bouton)"
+                        }
+                      ]
+                    }
+                  ],
+                  "label": "Document ou réponse"
+                }
+              ]
+            }
+          ],
+          "label": "Sourceur identifié"
+        },
+        {
+          "flow": [
+            {
+              "id": 24,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "text",
+                  "text": "❌ Ce numéro n'est pas enregistré comme sourceur SAYARA.\n\nSi vous pensez qu'il s'agit d'une erreur, contactez votre coordinateur."
+                }
+              },
+              "metadata": { "designer": { "x": 900, "y": 200 } }
+            }
+          ],
+          "label": "Numéro non reconnu"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true
+    }
+  }
+}

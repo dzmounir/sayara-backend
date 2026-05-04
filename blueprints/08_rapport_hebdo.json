@@ -1,0 +1,94 @@
+{
+  "name": "SAYARA — 08 Rapport Hebdomadaire",
+  "flow": [
+    {
+      "id": 1,
+      "module": "builtin:BasicScheduler",
+      "version": 1,
+      "parameters": {
+        "type": "cron",
+        "cron": "0 8 * * 5"
+      },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DEMANDES_MARCHE" },
+      "mapper": {
+        "filterByFormula": "AND(IS_AFTER({date_demande},DATEADD(TODAY(),-7,'days')),IS_BEFORE({date_demande},TODAY()))",
+        "fields": "[\"marque\",\"modele\",\"annee\",\"boite_vitesse\",\"date_demande\"]",
+        "maxRecords": 1000
+      },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DEMANDES_MARCHE" },
+      "mapper": {
+        "filterByFormula": "AND(IS_AFTER({date_demande},DATEADD(TODAY(),-14,'days')),IS_BEFORE({date_demande},DATEADD(TODAY(),-7,'days')))",
+        "fields": "[\"marque\",\"modele\",\"annee\",\"boite_vitesse\"]",
+        "maxRecords": 1000
+      },
+      "metadata": { "designer": { "x": 300, "y": 150 } }
+    },
+    {
+      "id": 4,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": { "handleErrors": false },
+      "mapper": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "method": "POST",
+        "headers": [
+          { "name": "x-api-key",        "value": "{{ANTHROPIC_API_KEY}}" },
+          { "name": "anthropic-version", "value": "2023-06-01" },
+          { "name": "Content-Type",       "value": "application/json" }
+        ],
+        "body": {
+          "model": "claude-haiku-4-5-20251001",
+          "max_tokens": 1024,
+          "messages": [
+            {
+              "role": "user",
+              "content": "Tu es l'analyste marché de SAYARA. Génère un rapport hebdomadaire WhatsApp concis basé sur ces données.\n\nDemandes CETTE SEMAINE (JSON): {{2.records}}\nDemandes SEMAINE PRÉCÉDENTE (JSON): {{3.records}}\n\nFormat du rapport (respecter exactement):\n📊 *RAPPORT MARCHÉ SAYARA*\n📅 Semaine du [DATE]\n\n🔥 *TOP MODÈLES DEMANDÉS :*\n1. [Marque Modèle] — X demandes ([variation]%)\n2. ...\n3. ...\n\n📦 *OPPORTUNITÉS CONTENEUR :*\n[Modèles avec >= 3 demandes — noter nombre exact]\n\n📈 *TENDANCES :*\n[2-3 observations clés]\n\n📊 Total semaine : X demandes ([variation vs S-1]%)\n\nRéponds UNIQUEMENT avec le message formaté, prêt à envoyer sur WhatsApp."
+            }
+          ]
+        }
+      },
+      "metadata": { "designer": { "x": 600, "y": 0 } }
+    },
+    {
+      "id": 5,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": { "handleErrors": false },
+      "mapper": {
+        "url": "https://{{SERVER_HOST}}/make-trigger",
+        "method": "POST",
+        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+        "body": {
+          "to": "{{COURTIER_WHATSAPP}}",
+          "type": "text",
+          "text": "{{4.data.content[1].text}}"
+        }
+      },
+      "metadata": { "designer": { "x": 900, "y": 0 } }
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false
+    }
+  }
+}

@@ -1,0 +1,303 @@
+{
+  "name": "SAYARA — 02 Qualification",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 2,
+      "parameters": { "hook": "{{HOOK_ID_QUALIFICATION}}", "maxResults": 1 },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 300, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 3,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "buttons",
+                  "text": "🇫🇷 *Bienvenue chez SAYARA !*\n\nNous importons des véhicules neufs depuis l'Arabie Saoudite.\n\nPour commencer, dites-nous quel véhicule vous intéresse (marque, modèle, année, boîte de vitesses).",
+                  "buttons": [
+                    { "id": "DEMARRER_DEVIS", "title": "🚀 Démarrer" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 600, "y": -200 } }
+            }
+          ],
+          "label": "Langue FR",
+          "filter": {
+            "name": "Langue FR",
+            "conditions": [
+              [{ "a": "{{1.body.button_reply.id}}", "o": "text:equal", "b": "LANG_FR" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 4,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "buttons",
+                  "text": "🇩🇿 *أهلاً بكم في SAYARA!*\n\nنستورد سيارات جديدة من المملكة العربية السعودية.\n\nأخبرنا بالسيارة التي تريدها (الماركة، الموديل، السنة، ناقل الحركة).",
+                  "buttons": [
+                    { "id": "DEMARRER_DEVIS", "title": "🚀 ابدأ" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 600, "y": 0 } }
+            }
+          ],
+          "label": "Langue AR",
+          "filter": {
+            "name": "Langue AR",
+            "conditions": [
+              [{ "a": "{{1.body.button_reply.id}}", "o": "text:equal", "b": "LANG_AR" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 5,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "buttons",
+                  "text": "🇬🇧 *Welcome to SAYARA!*\n\nWe import brand-new vehicles from Saudi Arabia.\n\nTell us which vehicle you're looking for (brand, model, year, transmission).",
+                  "buttons": [
+                    { "id": "DEMARRER_DEVIS", "title": "🚀 Get Started" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 600, "y": 200 } }
+            }
+          ],
+          "label": "Langue EN",
+          "filter": {
+            "name": "Langue EN",
+            "conditions": [
+              [{ "a": "{{1.body.button_reply.id}}", "o": "text:equal", "b": "LANG_EN" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 6,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://api.anthropic.com/v1/messages",
+                "method": "POST",
+                "headers": [
+                  { "name": "x-api-key",         "value": "{{ANTHROPIC_API_KEY}}" },
+                  { "name": "anthropic-version",  "value": "2023-06-01" },
+                  { "name": "Content-Type",        "value": "application/json" }
+                ],
+                "body": {
+                  "model": "claude-haiku-4-5-20251001",
+                  "max_tokens": 256,
+                  "messages": [
+                    {
+                      "role": "user",
+                      "content": "Extrait les informations véhicule du texte suivant. Réponds UNIQUEMENT en JSON pur, sans markdown, sans explication.\nFormat: {\"marque\":\"...\",\"modele\":\"...\",\"annee\":2024,\"boite_vitesse\":\"AUTO|MANUELLE|INCONNU\"}\nTexte: {{1.body.text}}"
+                    }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 600, "y": 400 } }
+            },
+            {
+              "id": 7,
+              "module": "json:ParseJSON",
+              "version": 1,
+              "parameters": {},
+              "mapper": {
+                "json": "{{6.data.content[1].text}}"
+              },
+              "metadata": { "designer": { "x": 900, "y": 400 } }
+            },
+            {
+              "id": 8,
+              "module": "airtable:createRecord",
+              "version": 2,
+              "parameters": {
+                "base": "{{AIRTABLE_BASE_ID}}",
+                "table": "DEMANDES_MARCHE"
+              },
+              "mapper": {
+                "fields": {
+                  "telephone": "{{1.body.from}}",
+                  "marque":        "{{7.marque}}",
+                  "modele":        "{{7.modele}}",
+                  "annee":         "{{7.annee}}",
+                  "boite_vitesse": "{{7.boite_vitesse}}",
+                  "date_demande":  "{{now}}",
+                  "texte_original": "{{1.body.text}}"
+                }
+              },
+              "metadata": { "designer": { "x": 1200, "y": 400 } }
+            },
+            {
+              "id": 9,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": { "designer": { "x": 1500, "y": 400 } },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 10,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{1.body.from}}",
+                          "type": "buttons",
+                          "text": "🎯 J'ai bien compris ! Vous cherchez :\n\n🚗 *{{7.marque}} {{7.modele}}*\n📅 Année : {{7.annee}}\n⚙️ Boîte : {{7.boite_vitesse}}\n\nC'est bien ça ?",
+                          "buttons": [
+                            { "id": "VEHICULE_CORRECT",  "title": "✅ Correct" },
+                            { "id": "VEHICULE_CORRIGER", "title": "✏️ Corriger" }
+                          ]
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1800, "y": 300 } }
+                    }
+                  ],
+                  "label": "Modèle Duster",
+                  "filter": {
+                    "name": "Modèle Duster",
+                    "conditions": [
+                      [{ "a": "{{7.modele}}", "o": "text:contain", "b": "Duster" }]
+                    ]
+                  }
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 11,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{1.body.from}}",
+                          "type": "buttons",
+                          "text": "⚠️ Actuellement, SAYARA importe exclusivement le *Dacia Duster* depuis l'Arabie Saoudite.\n\nLe Duster est un SUV 4x4 très populaire, disponible en 4 finitions avec un excellent rapport qualité/prix.\n\nVous souhaitez découvrir notre offre Duster, ou préférez-vous attendre que nous élargissions notre catalogue ?",
+                          "buttons": [
+                            { "id": "VOIR_DUSTER",  "title": "🚗 Voir le Duster" },
+                            { "id": "ATTENDRE_CATALOGUE", "title": "⏳ Attendre" }
+                          ]
+                        }
+                      },
+                      "metadata": { "designer": { "x": 1800, "y": 500 } }
+                    }
+                  ],
+                  "label": "Autre modèle"
+                }
+              ]
+            }
+          ],
+          "label": "Message texte libre (description véhicule)",
+          "filter": {
+            "name": "Message texte libre",
+            "conditions": [
+              [{ "a": "{{1.body.type}}", "o": "text:equal", "b": "text" }]
+            ]
+          }
+        },
+        {
+          "flow": [
+            {
+              "id": 12,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "list",
+                  "text": "✅ Parfait ! Voici nos 4 finitions disponibles pour le *Dacia Duster*.\n\nChoisissez la finition qui vous intéresse :",
+                  "button_title": "Voir les finitions",
+                  "sections": [
+                    {
+                      "title": "🏷️ Finitions Dacia Duster",
+                      "rows": [
+                        { "id": "SAY-V1", "title": "🥉 SAY-V1 — Essential",    "description": "Moteur 1.6L — Boîte manuelle — Confort essentiel" },
+                        { "id": "SAY-V2", "title": "🥈 SAY-V2 — Expression",  "description": "Moteur 1.6L — Clim auto — Écran tactile 8\"" },
+                        { "id": "SAY-V3", "title": "🥇 SAY-V3 — Prestige",    "description": "Moteur 1.3T — AWD 4x4 — Caméra 360° — Full options" },
+                        { "id": "SAY-V4", "title": "👑 SAY-V4 — Prestige AWD", "description": "Moteur 1.3T Turbo — 4x4 — Toit pano — Haut de gamme" }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 600, "y": 600 } }
+            }
+          ],
+          "label": "Duster validé → finitions",
+          "filter": {
+            "name": "Duster validé",
+            "conditions": [
+              [{ "a": "{{1.body.button_reply.id}}", "o": "text:equal", "b": "VEHICULE_CORRECT" }]
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true
+    }
+  }
+}

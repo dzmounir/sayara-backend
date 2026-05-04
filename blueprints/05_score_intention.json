@@ -1,0 +1,186 @@
+{
+  "name": "SAYARA — 05 Score Intention",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 2,
+      "parameters": { "hook": "{{HOOK_ID_SCORE}}", "maxResults": 1 },
+      "mapper": {},
+      "metadata": { "designer": { "x": 0, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "airtable:searchRecords",
+      "version": 2,
+      "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+      "mapper": {
+        "filterByFormula": "AND({telephone}=\"{{1.body.from}}\",{statut}=\"DEVIS_ENVOYE\")",
+        "maxRecords": 1
+      },
+      "metadata": { "designer": { "x": 300, "y": 0 } }
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": 600, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 4,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://api.anthropic.com/v1/messages",
+                "method": "POST",
+                "headers": [
+                  { "name": "x-api-key",        "value": "{{ANTHROPIC_API_KEY}}" },
+                  { "name": "anthropic-version", "value": "2023-06-01" },
+                  { "name": "Content-Type",       "value": "application/json" }
+                ],
+                "body": {
+                  "model": "claude-haiku-4-5-20251001",
+                  "max_tokens": 256,
+                  "messages": [
+                    {
+                      "role": "user",
+                      "content": "Analyse l'intention d'achat dans ce message d'un prospect qui attend son devis de voiture.\nRéponds UNIQUEMENT en JSON pur:\n{\"score_ajout\": <0-30>, \"signal_detecte\": \"hesitation|question_prix|question_delai|question_technique|impatience|humain|positif|negatif\", \"reponse_suggeree\": \"<message empathique court en français>\"}\n\nMessage: {{1.body.text}}\nScore actuel: {{2.records[1].fields.score_intention}}"
+                    }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 900, "y": -100 } }
+            },
+            {
+              "id": 5,
+              "module": "json:ParseJSON",
+              "version": 1,
+              "parameters": {},
+              "mapper": { "json": "{{4.data.content[1].text}}" },
+              "metadata": { "designer": { "x": 1200, "y": -100 } }
+            },
+            {
+              "id": 6,
+              "module": "airtable:updateRecord",
+              "version": 2,
+              "parameters": { "base": "{{AIRTABLE_BASE_ID}}", "table": "DOSSIERS" },
+              "mapper": {
+                "id": "{{2.records[1].id}}",
+                "fields": {
+                  "score_intention": "{{2.records[1].fields.score_intention + 5.score_ajout}}",
+                  "dernier_signal": "{{5.signal_detecte}}",
+                  "date_dernier_message": "{{now}}"
+                }
+              },
+              "metadata": { "designer": { "x": 1500, "y": -100 } }
+            },
+            {
+              "id": 7,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "parameters": { "handleErrors": false },
+              "mapper": {
+                "url": "https://{{SERVER_HOST}}/make-trigger",
+                "method": "POST",
+                "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "to": "{{1.body.from}}",
+                  "type": "buttons",
+                  "text": "{{5.reponse_suggeree}}",
+                  "buttons": [
+                    { "id": "REPRENDRE_DEVIS",     "title": "📋 Voir mon devis" },
+                    { "id": "PARLER_CONSEILLER",   "title": "💬 Un conseiller" }
+                  ]
+                }
+              },
+              "metadata": { "designer": { "x": 1800, "y": -100 } }
+            },
+            {
+              "id": 8,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": { "designer": { "x": 2100, "y": -100 } },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 9,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{COURTIER_WHATSAPP}}",
+                          "type": "text",
+                          "text": "⚡ *ALERTE URGENTE — Score 75+*\n\n📋 Dossier : {{2.records[1].fields.reference_dossier}}\n👤 {{2.records[1].fields.prenom}} {{2.records[1].fields.nom}}\n📞 {{1.body.from}}\n🎯 Score intention : {{2.records[1].fields.score_intention + 5.score_ajout}}/100\n📡 Signal : {{5.signal_detecte}}\n💬 Message : \"{{1.body.text}}\"\n\n🔴 CONTACTER MAINTENANT"
+                        }
+                      },
+                      "metadata": { "designer": { "x": 2400, "y": -200 } }
+                    }
+                  ],
+                  "label": "Score >= 75 — URGENT",
+                  "filter": {
+                    "name": "Score urgent",
+                    "conditions": [
+                      [{ "a": "{{2.records[1].fields.score_intention + 5.score_ajout}}", "o": "number:greater", "b": "74" }]
+                    ]
+                  }
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 10,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "parameters": { "handleErrors": false },
+                      "mapper": {
+                        "url": "https://{{SERVER_HOST}}/make-trigger",
+                        "method": "POST",
+                        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+                        "body": {
+                          "to": "{{COURTIER_WHATSAPP}}",
+                          "type": "text",
+                          "text": "📊 *Alerte intention — Score 50+*\n\n📋 {{2.records[1].fields.reference_dossier}} | {{2.records[1].fields.prenom}} {{2.records[1].fields.nom}}\n🎯 Score : {{2.records[1].fields.score_intention + 5.score_ajout}}/100\n📡 Signal : {{5.signal_detecte}}\n💬 \"{{1.body.text}}\""
+                        }
+                      },
+                      "metadata": { "designer": { "x": 2400, "y": 0 } }
+                    }
+                  ],
+                  "label": "Score 50-74 — alerte",
+                  "filter": {
+                    "name": "Score alerte",
+                    "conditions": [
+                      [{ "a": "{{2.records[1].fields.score_intention + 5.score_ajout}}", "o": "number:greater", "b": "49" }]
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "label": "Message texte libre"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true
+    }
+  }
+}

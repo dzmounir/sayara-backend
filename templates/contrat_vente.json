@@ -1,0 +1,171 @@
+{
+  "_meta": {
+    "template_engine": "carbone.io",
+    "version": "1.0",
+    "description": "Template contrat de vente SAYARA — Airtable → Carbone.io",
+    "instructions": "Upload ce fichier sur https://studio.carbone.io/ et noter le templateId"
+  },
+  "document": {
+    "title": "CONTRAT DE MANDAT D'IMPORTATION ET DE VENTE",
+    "sections": [
+      {
+        "type": "header",
+        "content": "CONTRAT DE MANDAT D'IMPORTATION ET DE VENTE\nRéférence : {d.reference_dossier}\nDate : {d.date_contrat}"
+      },
+      {
+        "type": "parties",
+        "title": "ENTRE LES SOUSSIGNÉS",
+        "mandant": {
+          "label": "LE MANDANT (Client)",
+          "fields": {
+            "nom_complet":    "{d.prenom_acheteur} {d.nom_acheteur}",
+            "date_naissance": "{d.date_naissance}",
+            "numero_piece":   "{d.numero_piece}",
+            "adresse":        "{d.adresse}",
+            "telephone":      "{d.telephone_acheteur}",
+            "email":          "{d.email_acheteur}"
+          }
+        },
+        "mandataire": {
+          "label": "LE MANDATAIRE (SAYARA)",
+          "denomination":  "SAYARA SARL",
+          "rc":            "{d.rc_sayara}",
+          "adresse":       "{d.adresse_sayara}",
+          "representant":  "{d.representant_sayara}"
+        }
+      },
+      {
+        "type": "objet_mandat",
+        "title": "OBJET DU MANDAT",
+        "texte": "Le Mandant confie à SAYARA le mandat exclusif d'importer depuis {d.pays_origine_vehicule} le véhicule ci-dessous désigné, selon les conditions et modalités définies au présent contrat.",
+        "vehicule": {
+          "marque":               "{d.marque}",
+          "modele":               "{d.modele}",
+          "annee":                "{d.annee}",
+          "finition":             "{d.finition}",
+          "boite_vitesse":        "{d.boite_vitesse}",
+          "couleur_principale":   "{d.couleur_1}",
+          "couleur_alternative":  "{d.couleur_2}",
+          "pays_origine":         "{d.pays_origine_vehicule}",
+          "formule":              "{d.formule_choisie}"
+        }
+      },
+      {
+        "type": "prix",
+        "title": "PRIX ET MODALITÉS DE PAIEMENT",
+        "prix_vehicule_affiche": {
+          "label": "Prix véhicule (inclut admin + transport + assurance)",
+          "value": "{d.prix_vehicule_affiche} DA"
+        },
+        "frais_notaire": {
+          "label": "Frais notariaux",
+          "value": "{d.frais_notaire} DA"
+        },
+        "total_livre_au_port": {
+          "label": "TOTAL LIVRÉ AU PORT",
+          "value": "{d.total_livre_au_port} DA"
+        },
+        "supplement_dedouanement": {
+          "label": "Supplément dédouanement (si formule DÉDOUANÉ)",
+          "droits_douane":    "{d.droits_douane} DA (APPROXIMATIFS)",
+          "degroupage":       "{d.cout_degroupage_da} DA",
+          "transitaire":      "{d.cout_transitaire_da} DA",
+          "total_dedouane":   "{d.total_dedouane} DA"
+        },
+        "echeancier": {
+          "depot_initial":  "100% à la signature — {d.total_livre_au_port} DA",
+          "remuneration_sourceur": "70% à l'embarquement, 30% à l'arrivée (interne SAYARA)"
+        }
+      },
+      {
+        "type": "clauses",
+        "title": "CONDITIONS GÉNÉRALES",
+        "clauses": [
+          {
+            "numero": "1",
+            "titre": "Objet du mandat",
+            "texte": "SAYARA s'engage à identifier un sourceur qualifié, à superviser l'achat, le contrôle qualité, l'embarquement et le transport du véhicule désigné depuis {d.pays_origine_vehicule} jusqu'au port d'Alger. La formule choisie est : {d.formule_choisie}."
+          },
+          {
+            "numero": "2",
+            "titre": "Prix et règlement",
+            "texte": "Le prix total de {d.total_livre_au_port} DA est réglé en une seule fois par dépôt auprès du notaire séquestre désigné, dès signature du présent contrat. Ce montant comprend le prix du véhicule, les frais administratifs du pays d'exportation, le transport maritime, l'assurance, la commission SAYARA et les frais notariaux."
+          },
+          {
+            "numero": "3",
+            "titre": "Délai de rétractation",
+            "texte": "Le Mandant dispose d'un délai de rétractation de 72 heures à compter de la signature du présent contrat. Passé ce délai, en cas de désistement avant l'achat du véhicule, des frais de dossier de 150 000 DA seront retenus sur le remboursement."
+          },
+          {
+            "numero": "4",
+            "titre": "Clause décès",
+            "texte": "En cas de décès du Mandant avant livraison du véhicule, ses héritiers légaux pourront soit reprendre le contrat à leur nom, soit demander un remboursement intégral sans pénalité, sur présentation d'un acte de notoriété."
+          },
+          {
+            "numero": "5",
+            "titre": "Non-récupération au port",
+            "texte": "Si le Mandant ne récupère pas son véhicule dans un délai de 30 jours à compter de la notification d'arrivée au port, des frais de gardiennage de 3 000 DA par jour seront facturés. Au-delà de 90 jours, le véhicule pourra être revendu pour couvrir les frais accumulés."
+          },
+          {
+            "numero": "6",
+            "titre": "Non-conformité",
+            "texte": "Si le véhicule livré présente une non-conformité manifeste par rapport aux spécifications contractuelles (modèle, année, finition), SAYARA s'engage à le remplacer dans un délai de 60 jours ou à procéder au remboursement intégral, frais de retour déduits."
+          },
+          {
+            "numero": "7",
+            "titre": "Responsabilité",
+            "texte": "SAYARA agit en qualité de mandataire et ne saurait être tenu responsable des événements de force majeure (catastrophes naturelles, conflits, fermeture des ports, décisions gouvernementales) affectant l'exécution du présent contrat."
+          },
+          {
+            "numero": "8",
+            "titre": "Juridiction",
+            "texte": "Tout litige relatif au présent contrat sera soumis à la juridiction compétente du ressort du domicile du Mandant, après tentative de règlement amiable dans un délai de 30 jours."
+          }
+        ]
+      },
+      {
+        "type": "signatures",
+        "title": "SIGNATURES",
+        "note": "Lu et approuvé — Bon pour accord",
+        "signataires": [
+          { "role": "Le Mandant",                 "nom": "{d.prenom_acheteur} {d.nom_acheteur}", "date": "{d.date_contrat}" },
+          { "role": "SAYARA SARL (Le Mandataire)", "nom": "{d.representant_sayara}",             "date": "{d.date_contrat}" }
+        ]
+      }
+    ]
+  },
+  "variables": {
+    "reference_dossier":     "string — Référence dossier SAYARA",
+    "date_contrat":          "string — Date de signature DD/MM/YYYY",
+    "nom_acheteur":          "string",
+    "prenom_acheteur":       "string",
+    "date_naissance":        "string",
+    "numero_piece":          "string",
+    "adresse":               "string",
+    "telephone_acheteur":    "string",
+    "email_acheteur":        "string",
+    "marque":                "string",
+    "modele":                "string",
+    "annee":                 "number",
+    "finition":              "string — SAY-V1 à SAY-V4",
+    "boite_vitesse":         "string — AUTO | MANUELLE",
+    "couleur_1":             "string",
+    "couleur_2":             "string — optionnel",
+    "pays_origine_vehicule": "string",
+    "formule_choisie":       "string — LIVRE_AU_PORT | DEDOUANE",
+    "prix_vehicule_affiche": "number — DA",
+    "frais_notaire":         "number — DA",
+    "total_livre_au_port":   "number — DA",
+    "droits_douane":         "number — DA (approximatifs)",
+    "cout_degroupage_da":    "number — DA",
+    "cout_transitaire_da":   "number — DA",
+    "supplement_dedouane":   "number — DA",
+    "total_dedouane":        "number — DA",
+    "nom_notaire":           "string",
+    "adresse_etude":         "string",
+    "ville_notaire":         "string",
+    "rc_sayara":             "string — Registre de commerce SAYARA",
+    "adresse_sayara":        "string",
+    "representant_sayara":   "string — Nom du représentant légal"
+  }
+}
