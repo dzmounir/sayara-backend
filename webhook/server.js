@@ -7,6 +7,10 @@ import { handleSourceurMessage, isKnownSourceur } from '../lib/sourceur_bot.js';
 import { handleClientMessage } from '../lib/client_bot.js';
 import { upsertPrixSourceur, recalculateBestPrices, getSourceurLeaderboard, getVehicleComparatif, checkAndIncrementVolume } from '../lib/prix_engine.js';
 import { parseAndValidateCatalogue } from '../lib/catalogue_parser.js';
+import { runPenaltiesCheck } from '../lib/penalites.js';
+import { confirmLiberation70, confirmLiberation30, sendWeeklyTransitUpdates, triggerPortArrivee } from '../lib/liberation.js';
+import { runGratitudeSequence, handleGratitudeReply } from '../lib/gratitude.js';
+import { confirmAnnulationApresDepot } from '../lib/annulation.js';
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -116,6 +120,31 @@ app.post('/webhook', async (req, res) => {
         caption:   message[type].caption,
         filename:  message[type].filename,
       };
+    }
+
+    // ── Global button routing (courtier + client callbacks) ──────────────────
+    const bid = payload.button_reply?.id || '';
+    if (bid.startsWith('LIB70_')) {
+      await confirmLiberation70(bid);
+      return;
+    }
+    if (bid.startsWith('LIB30_')) {
+      await confirmLiberation30(bid);
+      return;
+    }
+    if (bid.startsWith('ANNUL_CONFIRM_') || bid.startsWith('ANNUL_CANCEL_')) {
+      await confirmAnnulationApresDepot(from, bid);
+      return;
+    }
+    if (bid.startsWith('NOTE_') || bid.startsWith('AMB_')) {
+      await handleGratitudeReply(from, bid);
+      return;
+    }
+    if (bid.startsWith('PENALITE_')) {
+      await sendText(process.env.COURTIER_WHATSAPP_NUMBER || '33760469653',
+        `📋 Action pénalité reçue : ${bid}\nÀ traiter manuellement.`
+      );
+      return;
     }
 
     // ── Routing: sourceur line or known sourceur phone ────────────────────────
@@ -403,6 +432,55 @@ app.patch('/api/admin/sourceurs/:id', async (req, res) => {
     res.json(await atRes.json());
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Cron endpoints (triggered by Railway cron or external scheduler) ─────────
+
+const CRON_SECRET = process.env.CRON_SECRET || '';
+
+function isCronAuthorized(req) {
+  if (!CRON_SECRET) return true;
+  return (req.headers['x-cron-secret'] || req.query.secret) === CRON_SECRET;
+}
+
+// Daily: pénalités J+6→J+20 + séquence gratitude J+1/J+7/J+14
+app.post('/api/cron/daily', async (req, res) => {
+  if (!isCronAuthorized(req)) return res.status(401).json({ error: 'Unauthorized' });
+  res.json({ status: 'started' });
+  try {
+    await runPenaltiesCheck();
+    await runGratitudeSequence();
+    console.log('[cron/daily] completed');
+  } catch (err) {
+    console.error('[cron/daily] error:', err.message);
+  }
+});
+
+// Weekly: mise à jour transit clients
+app.post('/api/cron/weekly', async (req, res) => {
+  if (!isCronAuthorized(req)) return res.status(401).json({ error: 'Unauthorized' });
+  res.json({ status: 'started' });
+  try {
+    await sendWeeklyTransitUpdates();
+    console.log('[cron/weekly] completed');
+  } catch (err) {
+    console.error('[cron/weekly] error:', err.message);
+  }
+});
+
+// Port arrivée — triggered manually or by MarineTraffic webhook
+// Body: { reference_dossier: string }
+app.post('/api/cron/port-arrive', async (req, res) => {
+  if (!isCronAuthorized(req)) return res.status(401).json({ error: 'Unauthorized' });
+  const { reference_dossier } = req.body;
+  if (!reference_dossier) return res.status(400).json({ error: 'Missing reference_dossier' });
+  res.json({ status: 'started', reference_dossier });
+  try {
+    await triggerPortArrivee(reference_dossier);
+    console.log(`[cron/port-arrive] ${reference_dossier} traité`);
+  } catch (err) {
+    console.error('[cron/port-arrive] error:', err.message);
   }
 });
 
