@@ -493,7 +493,7 @@ app.get('/diagnostic', async (req, res) => {
   const liveBaseId  = process.env.AIRTABLE_BASE_ID;
   const liveApiKey  = process.env.AIRTABLE_API_KEY;
   const AT_BASE = `https://api.airtable.com/v0/${liveBaseId}`;
-  const TBL_PRIX = process.env.AIRTABLE_PRIX_SOURCEURS_TABLE || 'tbllk5ZWO6FYlAj3p';
+  const TBL_PRIX = process.env.AIRTABLE_PRIX_SOURCEURS_TABLE || 'tblkosDM1HA6SbW0V';
   const out = {};
 
   // 1 — Variables d'environnement (process.env en temps réel, pas les constantes)
