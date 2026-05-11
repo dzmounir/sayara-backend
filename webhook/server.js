@@ -489,14 +489,17 @@ app.post('/api/cron/port-arrive', async (req, res) => {
 
 // ─── Diagnostic complet ───────────────────────────────────────────────────────
 app.get('/diagnostic', async (req, res) => {
-  const AT_BASE = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`;
+  // Read directly from process.env (bypass module-level constants)
+  const liveBaseId  = process.env.AIRTABLE_BASE_ID;
+  const liveApiKey  = process.env.AIRTABLE_API_KEY;
+  const AT_BASE = `https://api.airtable.com/v0/${liveBaseId}`;
   const TBL_PRIX = process.env.AIRTABLE_PRIX_SOURCEURS_TABLE || 'tblkosDM1HA6SbW0V';
   const out = {};
 
-  // 1 — Variables d'environnement
+  // 1 — Variables d'environnement (process.env en temps réel, pas les constantes)
   out.env = {
-    AIRTABLE_API_KEY:    AIRTABLE_API_KEY  ? '✅' : '❌ MISSING',
-    AIRTABLE_BASE_ID:    AIRTABLE_BASE_ID  ? '✅' : '❌ MISSING',
+    AIRTABLE_API_KEY:    liveApiKey  ? '✅' : '❌ MISSING',
+    AIRTABLE_BASE_ID:    liveBaseId  ? `✅ (${liveBaseId.slice(0,6)}...)` : '❌ MISSING',
     ANTHROPIC_API_KEY:   process.env.ANTHROPIC_API_KEY   ? '✅' : '❌ MISSING',
     WHATSAPP_ACCESS_TOKEN: process.env.WHATSAPP_ACCESS_TOKEN ? '✅' : '❌ MISSING',
     AIRTABLE_PRIX_SOURCEURS_TABLE: process.env.AIRTABLE_PRIX_SOURCEURS_TABLE || `(défaut: ${TBL_PRIX})`,
@@ -504,7 +507,7 @@ app.get('/diagnostic', async (req, res) => {
 
   // 2 — Connexion Airtable PRIX_SOURCEURS (sans filtre)
   try {
-    const r = await fetch(`${AT_BASE}/${TBL_PRIX}?maxRecords=3`, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
+    const r = await fetch(`${AT_BASE}/${TBL_PRIX}?maxRecords=3`, { headers: { Authorization: `Bearer ${liveApiKey}` } });
     if (!r.ok) throw new Error(`HTTP ${r.status}: ${await r.text()}`);
     const d = await r.json();
     const recs = d.records ?? [];
@@ -531,7 +534,7 @@ app.get('/diagnostic', async (req, res) => {
   // 4 — Recherche stock disponible (filtre actuel du bot)
   try {
     const filter = encodeURIComponent('{stock_disponible}>0');
-    const r = await fetch(`${AT_BASE}/${TBL_PRIX}?filterByFormula=${filter}&maxRecords=5`, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
+    const r = await fetch(`${AT_BASE}/${TBL_PRIX}?filterByFormula=${filter}&maxRecords=5`, { headers: { Authorization: `Bearer ${liveApiKey}` } });
     if (!r.ok) throw new Error(`HTTP ${r.status}: ${await r.text()}`);
     const d = await r.json();
     const recs = d.records ?? [];
@@ -549,7 +552,7 @@ app.get('/diagnostic', async (req, res) => {
   if (testMarque && testModele) {
     try {
       const filter = encodeURIComponent(`AND({stock_disponible}>0,{marque}="${testMarque}",{modele}="${testModele}")`);
-      const r = await fetch(`${AT_BASE}/${TBL_PRIX}?filterByFormula=${filter}&maxRecords=10`, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
+      const r = await fetch(`${AT_BASE}/${TBL_PRIX}?filterByFormula=${filter}&maxRecords=10`, { headers: { Authorization: `Bearer ${liveApiKey}` } });
       if (!r.ok) throw new Error(`HTTP ${r.status}: ${await r.text()}`);
       const d = await r.json();
       const recs = d.records ?? [];
