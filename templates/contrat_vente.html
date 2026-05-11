@@ -4,212 +4,344 @@
 <meta charset="UTF-8">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Times New Roman', serif; font-size: 11px; color: #1a1a1a; background: #fff; }
-  .page { width: 210mm; min-height: 297mm; padding: 22mm 20mm; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #2c3e50; background: #fff; }
+  .page { width: 210mm; min-height: 297mm; padding: 0; }
 
-  .header { text-align: center; border-bottom: 3px double #1a3a6e; padding-bottom: 14px; margin-bottom: 18px; }
-  .header .company { font-size: 20px; font-weight: 900; color: #1a3a6e; letter-spacing: 2px; font-family: Arial, sans-serif; }
-  .header .tagline { font-size: 9px; color: #666; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px; font-family: Arial, sans-serif; }
-  .doc-title { text-align: center; margin: 18px 0 6px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #1a3a6e; font-family: Arial, sans-serif; }
-  .doc-subtitle { text-align: center; font-size: 10px; color: #555; margin-bottom: 18px; font-family: Arial, sans-serif; }
+  /* ── Top accent bar ─────────────────────────────── */
+  .top-bar { height: 6px; background: #2c3e50; }
 
-  .ref-box { display: flex; justify-content: space-between; background: #f0f4ff; border: 1px solid #1a3a6e; border-radius: 4px; padding: 8px 14px; margin-bottom: 18px; font-family: Arial, sans-serif; font-size: 10px; }
-  .ref-box span { font-weight: 700; color: #1a3a6e; }
+  /* ── Header ─────────────────────────────────────── */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 24px 14px; border-bottom: 1px solid #dee2e6; }
+  .logo-area .company-name { font-size: 20px; font-weight: 900; color: #2c3e50; letter-spacing: 0.5px; }
+  .logo-area .company-sub  { font-size: 8px; color: #7f8c8d; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .doc-info { text-align: right; }
+  .doc-info .doc-label    { font-size: 16px; font-weight: 900; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; }
+  .doc-info .doc-sublabel { font-size: 9px; color: #7f8c8d; margin-top: 2px; }
+  .doc-info .doc-ref      { font-size: 11px; font-weight: 700; color: #2c3e50; margin-top: 4px; }
+  .doc-info .doc-date     { font-size: 9px; color: #7f8c8d; margin-top: 2px; }
 
-  .parties-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #1a3a6e; padding-bottom: 5px; margin: 16px 0 10px; font-family: Arial, sans-serif; color: #1a3a6e; }
+  /* ── Ref strip ───────────────────────────────────── */
+  .ref-strip { display: flex; gap: 0; border-bottom: 1px solid #dee2e6; background: #f8f9fa; }
+  .ref-cell { flex: 1; padding: 10px 24px; font-size: 9px; color: #7f8c8d; }
+  .ref-cell + .ref-cell { border-left: 1px solid #dee2e6; }
+  .ref-cell .rc-label { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; margin-bottom: 3px; }
+  .ref-cell .rc-value { font-size: 10px; font-weight: 700; color: #2c3e50; }
 
-  .party-block { border: 1px solid #dde; border-radius: 4px; padding: 10px 14px; margin-bottom: 10px; font-family: Arial, sans-serif; }
-  .party-role { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #1a3a6e; margin-bottom: 6px; }
-  .party-detail { font-size: 10px; line-height: 1.8; }
-  .party-detail strong { color: #1a1a2e; }
+  /* ── Section title ───────────────────────────────── */
+  .section-title { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; padding: 12px 24px 6px; }
 
-  .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1a3a6e; margin: 18px 0 8px; border-bottom: 2px solid #1a3a6e; padding-bottom: 5px; font-family: Arial, sans-serif; }
+  /* ── Party blocks ────────────────────────────────── */
+  .parties { display: flex; gap: 0; border-bottom: 1px solid #dee2e6; }
+  .party-block { flex: 1; padding: 12px 24px; background: #f8f9fa; }
+  .party-block + .party-block { border-left: 1px solid #dee2e6; }
+  .party-label  { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; margin-bottom: 6px; }
+  .party-name   { font-size: 11px; font-weight: 700; color: #2c3e50; margin-bottom: 4px; }
+  .party-detail { font-size: 9px; color: #555; line-height: 1.7; }
 
-  .vehicle-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-family: Arial, sans-serif; }
-  .vehicle-table td { padding: 5px 10px; border: 1px solid #dde; font-size: 10px; }
-  .vehicle-table td:first-child { background: #f0f4ff; font-weight: 700; color: #1a3a6e; width: 45%; }
+  /* ── Vehicle strip ───────────────────────────────── */
+  .vehicle-strip { display: flex; align-items: stretch; border-bottom: 1px solid #dee2e6; }
+  .vehicle-main { flex: 2; padding: 12px 24px; }
+  .vehicle-main .veh-title { font-size: 14px; font-weight: 900; color: #2c3e50; }
+  .vehicle-main .veh-ref   { font-size: 9px; color: #7f8c8d; margin-top: 2px; }
+  .vehicle-specs { flex: 3; display: flex; border-left: 1px solid #dee2e6; }
+  .spec-cell { flex: 1; padding: 12px 14px; border-right: 1px solid #dee2e6; }
+  .spec-cell:last-child { border-right: none; }
+  .spec-cell .spec-label { font-size: 7px; text-transform: uppercase; letter-spacing: 1px; color: #7f8c8d; margin-bottom: 3px; }
+  .spec-cell .spec-value { font-size: 10px; font-weight: 700; color: #2c3e50; }
 
-  .price-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-family: Arial, sans-serif; }
-  .price-table th { background: #1a3a6e; color: #fff; padding: 7px 10px; font-size: 9px; text-transform: uppercase; text-align: left; }
-  .price-table td { padding: 6px 10px; border-bottom: 1px solid #eee; font-size: 10px; }
-  .price-table .amount { text-align: right; font-family: 'Courier New', monospace; font-weight: 600; }
-  .price-table .total-row td { background: #1a3a6e; color: #fff; font-weight: 900; font-size: 12px; }
-  .price-table .total-row .amount { color: #ffd700; }
+  /* ── Tables ──────────────────────────────────────── */
+  .table-wrap { padding: 0 24px; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  table thead tr { background: #2c3e50; }
+  table thead th { padding: 8px 10px; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #fff; text-align: left; }
+  table thead th.right { text-align: right; }
+  table tbody tr { border-bottom: 1px solid #dee2e6; }
+  table tbody tr:last-child { border-bottom: none; }
+  table tbody td { padding: 7px 10px; font-size: 10px; color: #2c3e50; }
+  table tbody td.right { text-align: right; font-family: 'Courier New', monospace; font-weight: 600; }
+  table tbody td.label { background: #f8f9fa; font-weight: 700; width: 45%; }
+  .total-row td { background: #2c3e50 !important; color: #fff !important; font-weight: 900 !important; font-size: 11px !important; }
+  .total-row td.right { color: #f39c12 !important; }
 
-  .payment-schedule { display: flex; gap: 10px; margin: 12px 0; font-family: Arial, sans-serif; }
-  .pay-step { flex: 1; border: 1px solid #dde; border-radius: 4px; padding: 8px; text-align: center; }
-  .pay-step .ps-num { font-size: 9px; font-weight: 700; color: #1a3a6e; text-transform: uppercase; margin-bottom: 3px; }
-  .pay-step .ps-amount { font-size: 12px; font-weight: 900; font-family: 'Courier New', monospace; }
-  .pay-step .ps-cond { font-size: 8px; color: #888; margin-top: 3px; font-style: italic; }
+  /* ── Payment steps ───────────────────────────────── */
+  .payment-wrap { padding: 0 24px; margin-top: 14px; }
+  .ps-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dotted #dee2e6; }
+  .ps-row:last-child { border-bottom: none; }
+  .ps-step { width: 22px; height: 22px; border-radius: 50%; background: #2c3e50; color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ps-info { flex: 1; }
+  .ps-info .ps-label   { font-size: 9px; font-weight: 700; color: #2c3e50; }
+  .ps-info .ps-trigger { font-size: 8px; color: #7f8c8d; font-style: italic; }
+  .ps-amount { font-size: 10px; font-weight: 700; font-family: 'Courier New', monospace; color: #2c3e50; white-space: nowrap; }
 
+  /* ── Clauses ─────────────────────────────────────── */
+  .clauses-wrap { padding: 0 24px; }
   .clause { margin: 10px 0; page-break-inside: avoid; }
-  .clause-title { font-weight: 700; font-size: 11px; color: #1a3a6e; margin-bottom: 4px; font-family: Arial, sans-serif; }
-  .clause-text { font-size: 10px; line-height: 1.7; text-align: justify; }
+  .clause-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+  .clause-num { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #2c3e50; color: #fff; font-size: 8px; font-weight: 700; flex-shrink: 0; }
+  .clause-title-text { font-weight: 700; font-size: 10px; color: #2c3e50; }
+  .clause-text { font-size: 9.5px; line-height: 1.7; color: #444; text-align: justify; padding-left: 26px; }
 
-  .sig-section { margin-top: 24px; border-top: 2px solid #1a3a6e; padding-top: 16px; font-family: Arial, sans-serif; }
+  /* ── Signatures ──────────────────────────────────── */
+  .sig-wrap { padding: 14px 24px; border-top: 1px solid #dee2e6; margin-top: 16px; }
+  .sig-intro { font-size: 9px; color: #7f8c8d; margin-bottom: 14px; }
   .sig-grid { display: flex; gap: 20px; }
   .sig-item { flex: 1; }
-  .sig-line { border-bottom: 1px solid #555; margin: 40px 0 6px; }
-  .sig-label { font-size: 9px; color: #555; font-weight: 700; text-transform: uppercase; }
-  .sig-name { font-size: 10px; color: #1a1a2e; margin-top: 2px; }
+  .sig-line { border-bottom: 1px solid #555; margin: 36px 0 6px; }
+  .sig-label { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #7f8c8d; }
+  .sig-name  { font-size: 9px; font-weight: 700; color: #2c3e50; margin-top: 2px; }
+  .sig-note  { font-size: 7.5px; color: #aaa; margin-top: 2px; }
 
-  .footer { margin-top: 16px; padding-top: 10px; border-top: 1px solid #dde; display: flex; justify-content: space-between; font-size: 8px; color: #999; font-family: Arial, sans-serif; }
-
-  p { margin: 4px 0; font-size: 10px; line-height: 1.7; }
+  /* ── Footer bar ──────────────────────────────────── */
+  .footer-bar { background: #2c3e50; color: #ecf0f1; padding: 10px 24px; display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+  .footer-bar span { font-size: 8px; }
+  .footer-bar .sep { opacity: 0.4; }
 </style>
 </head>
 <body>
 <div class="page">
 
+  <div class="top-bar"></div>
+
   <!-- HEADER -->
   <div class="header">
-    <div class="company">DJAZAIR AUTO</div>
-    <div class="tagline">Import automobile Algérie • Véhicules neufs GCC</div>
+    <div class="logo-area">
+      <div class="company-name">DJAZAIR AUTO</div>
+      <div class="company-sub">Import automobile Algérie · Véhicules neufs GCC</div>
+    </div>
+    <div class="doc-info">
+      <div class="doc-label">Contrat de Mandat</div>
+      <div class="doc-sublabel">Et Acte de Vente — Véhicule Neuf Importé</div>
+      <div class="doc-ref">N° {d.reference_dossier}</div>
+      <div class="doc-date">Signé le {d.date_contrat}</div>
+    </div>
   </div>
 
-  <div class="doc-title">Contrat de Mandat d'Importation</div>
-  <div class="doc-subtitle">Et Acte de Vente de Véhicule Neuf — Importé d'Arabie Saoudite</div>
-
-  <div class="ref-box">
-    <div>Référence dossier : <span>{d.reference_dossier}</span></div>
-    <div>Date de signature : <span>{d.date_contrat}</span></div>
-    <div>Notaire : <span>Me. {d.nom_notaire}</span></div>
+  <!-- REF STRIP -->
+  <div class="ref-strip">
+    <div class="ref-cell">
+      <div class="rc-label">Dossier</div>
+      <div class="rc-value">{d.reference_dossier}</div>
+    </div>
+    <div class="ref-cell">
+      <div class="rc-label">Date de signature</div>
+      <div class="rc-value">{d.date_contrat}</div>
+    </div>
+    <div class="ref-cell">
+      <div class="rc-label">Notaire séquestre</div>
+      <div class="rc-value">Me. {d.nom_notaire}</div>
+    </div>
+    <div class="ref-cell">
+      <div class="rc-label">Formule</div>
+      <div class="rc-value">{d.formule}</div>
+    </div>
   </div>
 
   <!-- PARTIES -->
-  <div class="parties-title">Entre les soussignés</div>
-
-  <div class="party-block">
-    <div class="party-role">Le Mandant — L'Acheteur</div>
-    <div class="party-detail">
-      <strong>{d.prenom} {d.nom}</strong>, né(e) le {d.date_naissance}, porteur de la pièce d'identité n° <strong>{d.numero_piece}</strong>,<br>
-      demeurant à : {d.adresse}, {d.commune}, wilaya de {d.wilaya}.<br>
-      Téléphone : {d.telephone} — Email : {d.email}
+  <div class="section-title">Entre les soussignés</div>
+  <div class="parties" style="border-top: 1px solid #dee2e6;">
+    <div class="party-block">
+      <div class="party-label">Le Mandant — L'Acheteur</div>
+      <div class="party-name">{d.prenom} {d.nom}</div>
+      <div class="party-detail">
+        Né(e) le {d.date_naissance} — Pièce d'identité n° {d.numero_piece}<br>
+        {d.adresse}, {d.commune}, wilaya de {d.wilaya}<br>
+        {d.telephone} · {d.email}
+      </div>
+    </div>
+    <div class="party-block">
+      <div class="party-label">Le Mandataire — Djazair Auto</div>
+      <div class="party-name">DJAZAIR AUTO SARL</div>
+      <div class="party-detail">
+        SARL au capital de ____________ DA — RC n° ____________<br>
+        Siège social : Alger, Algérie<br>
+        Représentée par son gérant dûment habilité
+      </div>
+    </div>
+    <div class="party-block">
+      <div class="party-label">Le Sourceur — Fournisseur</div>
+      <div class="party-name">{d.nom_sourceur}</div>
+      <div class="party-detail">
+        Établi(e) en {d.pays_sourceur}<br>
+        {d.adresse_sourceur}<br>
+        Réf. partenariat : {d.reference_contrat_sourceur}
+      </div>
     </div>
   </div>
 
-  <div class="party-block">
-    <div class="party-role">Le Mandataire — Djazair Auto</div>
-    <div class="party-detail">
-      <strong>DJAZAIR AUTO SARL</strong>, société à responsabilité limitée au capital social de ____________ DA,<br>
-      inscrite au Registre du Commerce sous le n° ____________,<br>
-      dont le siège social est sis à : Alger, Algérie.<br>
-      Représentée par son gérant dûment habilité.
+  <!-- VEHICLE STRIP -->
+  <div class="section-title" style="margin-top:12px;">Art. 2 — Véhicule commandé</div>
+  <div class="vehicle-strip" style="border-top: 1px solid #dee2e6;">
+    <div class="vehicle-main">
+      <div class="veh-title">{d.marque} {d.modele} — {d.finition}</div>
+      <div class="veh-ref">Réf. {d.reference_variante} · Port : {d.port_embarquement}</div>
+    </div>
+    <div class="vehicle-specs">
+      <div class="spec-cell">
+        <div class="spec-label">Année</div>
+        <div class="spec-value">{d.annee}</div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Boîte</div>
+        <div class="spec-value">{d.boite_vitesse}</div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Couleur 1</div>
+        <div class="spec-value">{d.couleur_1}</div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Couleur 2</div>
+        <div class="spec-value">{d.couleur_2}</div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Origine</div>
+        <div class="spec-value">{d.pays_origine}</div>
+      </div>
     </div>
   </div>
 
-  <div class="party-block">
-    <div class="party-role">Le Sourceur — Fournisseur étranger</div>
-    <div class="party-detail">
-      <strong>{d.nom_sourceur}</strong>, société établie en {d.pays_sourceur},<br>
-      adresse : {d.adresse_sourceur}.<br>
-      Référence partenariat : {d.reference_contrat_sourceur}
-    </div>
+  <!-- PRICE TABLE -->
+  <div class="section-title" style="margin-top:12px;">Art. 3 — Prix et frais</div>
+  <div class="table-wrap" style="margin-top:0;">
+    <table>
+      <thead>
+        <tr>
+          <th>Poste</th>
+          <th class="right">Montant (DA)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Prix total véhicule livré au port d'Alger</td>
+          <td class="right">{d.total_livre_au_port}</td>
+        </tr>
+        <tr style="display:{d.formule:ifNE('DEDOUANE'):show('none')}">
+          <td>Droits de douane</td>
+          <td class="right">{d.droits_douane_da}</td>
+        </tr>
+        <tr style="display:{d.formule:ifNE('DEDOUANE'):show('none')}">
+          <td>Dédouanement + dégroupage + transitaire</td>
+          <td class="right">{d.frais_dedouanement_da}</td>
+        </tr>
+        <tr>
+          <td>Frais notariaux (séquestre)</td>
+          <td class="right">{d.frais_notaire}</td>
+        </tr>
+        <tr class="total-row">
+          <td><strong>Montant total contractuel</strong></td>
+          <td class="right"><strong>{d.total_ttc_da}</strong></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
-  <!-- OBJECT -->
-  <div class="section-title">Art. 1 — Objet du contrat</div>
-  <p>Le présent contrat a pour objet le mandat donné par l'Acheteur à Djazair Auto aux fins de procéder, pour son compte et en son nom, à l'importation depuis l'Arabie Saoudite d'un véhicule neuf dont les caractéristiques sont définies ci-après.</p>
-
-  <div class="section-title">Art. 2 — Véhicule commandé</div>
-  <table class="vehicle-table">
-    <tr><td>Marque / Modèle</td><td><strong>{d.marque} {d.modele}</strong></td></tr>
-    <tr><td>Finition / Référence</td><td>{d.finition} — {d.reference_variante}</td></tr>
-    <tr><td>Année</td><td>{d.annee}</td></tr>
-    <tr><td>Boîte de vitesses</td><td>{d.boite_vitesse}</td></tr>
-    <tr><td>Couleur principale</td><td>{d.couleur_1}</td></tr>
-    <tr><td>Couleur alternative</td><td>{d.couleur_2}</td></tr>
-    <tr><td>Pays d'origine</td><td>{d.pays_origine} — Fabrication : {d.pays_fabrication}</td></tr>
-    <tr><td>Port d'embarquement</td><td>{d.port_embarquement}</td></tr>
-    <tr><td>Formule de livraison</td><td><strong>{d.formule}</strong></td></tr>
-  </table>
-
-  <!-- PRICE -->
-  <div class="section-title">Art. 3 — Prix et frais</div>
-  <table class="price-table">
-    <tr><th>Poste</th><th style="text-align:right">Montant (DA)</th></tr>
-    <tr><td>Prix véhicule + CIF livré port d'Alger</td><td class="amount">{d.sous_total_da} DA</td></tr>
-    <tr><td>Droits de douane</td><td class="amount">{d.droits_douane_da} DA</td></tr>
-    <tr><td>Frais de dédouanement / dégroupage / transitaire</td><td class="amount">{d.frais_dedouanement_da} DA</td></tr>
-    <tr><td>Commission Djazair Auto</td><td class="amount">{d.commission_da} DA</td></tr>
-    <tr><td>Frais notariaux (séquestre)</td><td class="amount">{d.frais_notaire} DA</td></tr>
-    <tr class="total-row"><td><strong>MONTANT TOTAL CONTRACTUEL</strong></td><td class="amount"><strong>{d.total_ttc_da} DA</strong></td></tr>
-  </table>
-
-  <!-- PAYMENT -->
-  <div class="section-title">Art. 4 — Modalités de paiement</div>
-  <div class="payment-schedule">
-    <div class="pay-step">
-      <div class="ps-num">Versement initial</div>
+  <!-- PAYMENT SCHEDULE -->
+  <div class="section-title" style="margin-top:14px;">Art. 4 — Échéancier de paiement</div>
+  <div class="payment-wrap" style="margin-top:0;">
+    <div class="ps-row">
+      <div class="ps-step">1</div>
+      <div class="ps-info">
+        <div class="ps-label">Frais notaire — immédiat</div>
+        <div class="ps-trigger">Versement à la signature du présent contrat</div>
+      </div>
       <div class="ps-amount">{d.frais_notaire} DA</div>
-      <div class="ps-cond">Frais notariaux — immédiat</div>
     </div>
-    <div class="pay-step">
-      <div class="ps-num">70% à l'embarquement</div>
+    <div class="ps-row">
+      <div class="ps-step">2</div>
+      <div class="ps-info">
+        <div class="ps-label">70% — à l'embarquement</div>
+        <div class="ps-trigger">Sur validation des 5 documents embarquement</div>
+      </div>
       <div class="ps-amount">{d.montant_70_total} DA</div>
-      <div class="ps-cond">Sur validation des 5 documents</div>
     </div>
-    <div class="pay-step">
-      <div class="ps-num">30% à l'arrivée</div>
+    <div class="ps-row">
+      <div class="ps-step">3</div>
+      <div class="ps-info">
+        <div class="ps-label">30% — à l'arrivée port</div>
+        <div class="ps-trigger">Sur confirmation arrivée navire port d'Alger</div>
+      </div>
       <div class="ps-amount">{d.montant_30_total} DA</div>
-      <div class="ps-cond">Sur arrivée navire port d'Alger</div>
     </div>
   </div>
 
   <!-- CLAUSES -->
-  <div class="section-title">Art. 5 — Clauses et conditions</div>
+  <div class="section-title" style="margin-top:14px;">Art. 5 — Clauses et conditions</div>
+  <div class="clauses-wrap">
 
-  <div class="clause">
-    <div class="clause-title">5.1 — Droit de rétractation</div>
-    <div class="clause-text">L'Acheteur dispose d'un délai de rétractation de 72 heures à compter de la signature du présent contrat, sans pénalité. Passé ce délai, et si la commande a déjà été transmise au Sourceur, des frais de rétractation tardive de 150 000 DA seront dus à Djazair Auto.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">1</span>
+        <span class="clause-title-text">Droit de rétractation</span>
+      </div>
+      <div class="clause-text">L'Acheteur dispose d'un délai de rétractation de 72 heures à compter de la signature du présent contrat, sans pénalité. Passé ce délai, si la commande a déjà été transmise au Sourceur, des frais de rétractation tardive de 150 000 DA seront dus à Djazair Auto.</div>
+    </div>
 
-  <div class="clause">
-    <div class="clause-title">5.2 — Délai de livraison</div>
-    <div class="clause-text">Le délai de livraison estimé est de {d.delai_min} à {d.delai_max} jours ouvrables à compter de la confirmation de commande par le Sourceur. Djazair Auto s'engage à informer l'Acheteur de tout retard significatif dans un délai de 48 heures.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">2</span>
+        <span class="clause-title-text">Délai de livraison</span>
+      </div>
+      <div class="clause-text">Le délai de livraison estimé est de {d.delai_min} à {d.delai_max} jours ouvrables à compter de la confirmation de commande par le Sourceur. Djazair Auto s'engage à informer l'Acheteur de tout retard significatif dans un délai de 48 heures.</div>
+    </div>
 
-  <div class="clause">
-    <div class="clause-title">5.3 — Documents d'embarquement</div>
-    <div class="clause-text">Le Sourceur est tenu de transmettre dans un délai de 10 jours ouvrables suivant la confirmation de commande : la facture d'achat originale, la carte grise du pays d'origine, le Bill of Lading, le certificat d'assurance maritime et un minimum de 5 photos du véhicule (VIN visible). Tout retard engendre des pénalités de 10 000 DA/jour déduites du paiement.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">3</span>
+        <span class="clause-title-text">Documents d'embarquement</span>
+      </div>
+      <div class="clause-text">Le Sourceur transmettra dans les 10 jours ouvrables suivant la confirmation de commande : facture d'achat originale, carte grise du pays d'origine, Bill of Lading, certificat d'assurance maritime et minimum 5 photos du véhicule (VIN visible). Tout retard entraîne des pénalités de 10 000 DA/jour déduites du versement.</div>
+    </div>
 
-  <div class="clause">
-    <div class="clause-title">5.4 — Cas de décès de l'acheteur</div>
-    <div class="clause-text">En cas de décès de l'Acheteur après versement des fonds, les héritiers légaux désignés par certificat successoral notarié pourront opter pour la continuation du contrat ou le remboursement intégral des sommes versées, déduction faite des frais engagés.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">4</span>
+        <span class="clause-title-text">Cas de décès de l'acheteur</span>
+      </div>
+      <div class="clause-text">En cas de décès de l'Acheteur après versement des fonds, les héritiers légaux désignés par certificat successoral notarié pourront opter pour la continuation du contrat ou le remboursement intégral des sommes versées, déduction faite des frais engagés.</div>
+    </div>
 
-  <div class="clause">
-    <div class="clause-title">5.5 — Non-récupération du véhicule</div>
-    <div class="clause-text">Si l'Acheteur ne récupère pas son véhicule dans les 30 jours suivant sa disponibilité au port d'Alger, des frais de stockage de 3 000 DA/jour seront facturés. Au-delà de 90 jours, Djazair Auto se réserve le droit de revendre le véhicule à un tiers, avec restitution à l'Acheteur du prix de revente minoré des frais engagés.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">5</span>
+        <span class="clause-title-text">Non-récupération du véhicule</span>
+      </div>
+      <div class="clause-text">Si l'Acheteur ne récupère pas son véhicule dans les 30 jours suivant sa disponibilité au port d'Alger, des frais de stockage de 3 000 DA/jour seront facturés. Au-delà de 90 jours, Djazair Auto se réserve le droit de revendre le véhicule, avec restitution à l'Acheteur du prix de revente minoré des frais engagés.</div>
+    </div>
 
-  <div class="clause">
-    <div class="clause-title">5.6 — Non-conformité</div>
-    <div class="clause-text">Si le véhicule livré ne correspond pas aux caractéristiques contractuelles, Djazair Auto s'engage à régulariser la situation dans les 30 jours ou à procéder au remboursement intégral des sommes versées, à l'exclusion de tout autre dommage et intérêt.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">6</span>
+        <span class="clause-title-text">Non-conformité</span>
+      </div>
+      <div class="clause-text">Si le véhicule livré ne correspond pas aux caractéristiques contractuelles, Djazair Auto s'engage à régulariser la situation dans les 30 jours ou à procéder au remboursement intégral des sommes versées, à l'exclusion de tout autre dommage et intérêt.</div>
+    </div>
 
-  <div class="clause">
-    <div class="clause-title">5.7 — Force majeure</div>
-    <div class="clause-text">Aucune des parties ne pourra être tenue responsable de l'inexécution de ses obligations résultant d'un cas de force majeure : catastrophe naturelle, décision gouvernementale, fermeture des frontières ou tout autre événement imprévisible et irrésistible.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">7</span>
+        <span class="clause-title-text">Force majeure</span>
+      </div>
+      <div class="clause-text">Aucune des parties ne pourra être tenue responsable de l'inexécution de ses obligations résultant d'un cas de force majeure : catastrophe naturelle, décision gouvernementale, fermeture des frontières ou tout autre événement imprévisible et irrésistible.</div>
+    </div>
 
-  <div class="clause">
-    <div class="clause-title">5.8 — Juridiction compétente</div>
-    <div class="clause-text">Tout litige relatif au présent contrat sera soumis, à défaut de règlement amiable, à la juridiction compétente du lieu du siège social de Djazair Auto, en application du droit algérien.</div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">8</span>
+        <span class="clause-title-text">Juridiction compétente</span>
+      </div>
+      <div class="clause-text">Tout litige relatif au présent contrat sera soumis, à défaut de règlement amiable, à la juridiction compétente du lieu du siège social de Djazair Auto, en application du droit algérien.</div>
+    </div>
+
   </div>
 
   <!-- SIGNATURES -->
-  <div class="sig-section">
-    <div style="margin-bottom:12px; font-size:10px; font-family: Arial, sans-serif;">
-      Fait en quatre (4) exemplaires originaux à _____________, le {d.date_contrat}.
-    </div>
+  <div class="sig-wrap">
+    <div class="sig-intro">Fait en quatre (4) exemplaires originaux à _____________, le {d.date_contrat}.</div>
     <div class="sig-grid">
       <div class="sig-item">
         <div class="sig-line"></div>
         <div class="sig-label">L'Acheteur (Mandant)</div>
         <div class="sig-name">{d.prenom} {d.nom}</div>
-        <div style="font-size:8px; color:#aaa; margin-top:2px; font-family:Arial,sans-serif;">Lu et approuvé — Signature précédée de la mention manuscrite</div>
+        <div class="sig-note">Lu et approuvé — Mention manuscrite obligatoire</div>
       </div>
       <div class="sig-item">
         <div class="sig-line"></div>
@@ -224,10 +356,13 @@
     </div>
   </div>
 
-  <div class="footer">
-    <span>Djazair Auto — Import automobile Algérie</span>
+  <!-- FOOTER -->
+  <div class="footer-bar">
+    <span>DJAZAIR AUTO — Import automobile Algérie</span>
+    <span class="sep">|</span>
     <span>contact@djazairauto.com</span>
-    <span>Dossier {d.reference_dossier} — {d.date_contrat}</span>
+    <span class="sep">|</span>
+    <span>Réf. {d.reference_dossier} · {d.date_contrat}</span>
   </div>
 
 </div>

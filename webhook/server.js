@@ -25,7 +25,10 @@ const AIRTABLE_DOSSIERS = process.env.AIRTABLE_DOSSIERS_TABLE_ID || 'tblxe9U9z69
 const AIRTABLE_SOURCEURS = process.env.AIRTABLE_SOURCEURS_TABLE  || 'tblGeoLTGnBKhlAsK';
 
 // Dedicated WhatsApp phone number ID for suppliers (separate from client line)
-const SOURCEUR_PHONE_ID = process.env.WHATSAPP_SOURCEUR_PHONE_NUMBER_ID || '';
+// Guard: if set to the same value as the main bot ID, treat as unset to avoid routing everyone to sourceur bot
+const MAIN_PHONE_ID     = process.env.WHATSAPP_PHONE_NUMBER_ID || '';
+const _RAW_SOURCEUR_ID  = process.env.WHATSAPP_SOURCEUR_PHONE_NUMBER_ID || '';
+const SOURCEUR_PHONE_ID = (_RAW_SOURCEUR_ID && _RAW_SOURCEUR_ID !== MAIN_PHONE_ID) ? _RAW_SOURCEUR_ID : '';
 
 // Hardcoded known sourceur numbers (fallback whitelist, comma-separated in env)
 const SOURCEUR_NUMBERS = (process.env.SOURCEUR_WHITELIST || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -482,6 +485,31 @@ app.post('/api/cron/port-arrive', async (req, res) => {
   } catch (err) {
     console.error('[cron/port-arrive] error:', err.message);
   }
+});
+
+// ─── Debug endpoint — routing diagnosis ───────────────────────────────────────
+app.get('/api/debug/routing', async (req, res) => {
+  const phone = String(req.query.phone || '').trim();
+  const inWhitelist = SOURCEUR_NUMBERS.includes(phone);
+  const knownSourceur = phone ? await isKnownSourceur(phone).catch(() => 'error') : 'n/a';
+
+  res.json({
+    env: {
+      WHATSAPP_PHONE_NUMBER_ID:          MAIN_PHONE_ID      || '(not set)',
+      WHATSAPP_SOURCEUR_PHONE_NUMBER_ID:  _RAW_SOURCEUR_ID  || '(not set)',
+      SOURCEUR_PHONE_ID_effective:        SOURCEUR_PHONE_ID || '(disabled)',
+      SOURCEUR_WHITELIST:                 process.env.SOURCEUR_WHITELIST || '(empty)',
+      AIRTABLE_BASE_ID:                   AIRTABLE_BASE_ID  ? '✅ set' : '❌ missing',
+      AIRTABLE_API_KEY:                   AIRTABLE_API_KEY  ? '✅ set' : '❌ missing',
+      WHATSAPP_ACCESS_TOKEN:              process.env.WHATSAPP_ACCESS_TOKEN ? '✅ set' : '❌ missing',
+    },
+    routing_for_phone: phone || '(no phone provided — add ?phone=33760469653)',
+    inWhitelist,
+    isKnownSourceur: knownSourceur,
+    verdict: inWhitelist || knownSourceur === true
+      ? '→ SOURCEUR BOT'
+      : '→ CLIENT BOT',
+  });
 });
 
 // ─── Health check ─────────────────────────────────────────────────────────────

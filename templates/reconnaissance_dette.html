@@ -4,218 +4,322 @@
 <meta charset="UTF-8">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Times New Roman', serif; font-size: 11px; color: #1a1a1a; background: #fff; }
-  .page { width: 210mm; min-height: 297mm; padding: 22mm 20mm; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #2c3e50; background: #fff; }
+  .page { width: 210mm; min-height: 297mm; padding: 0; }
 
-  .header { text-align: center; border-bottom: 3px double #1a3a6e; padding-bottom: 14px; margin-bottom: 18px; }
-  .header .company { font-size: 20px; font-weight: 900; color: #1a3a6e; letter-spacing: 2px; font-family: Arial, sans-serif; }
-  .header .tagline { font-size: 9px; color: #666; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px; font-family: Arial, sans-serif; }
+  /* ── Top accent bar ─────────────────────────────── */
+  .top-bar { height: 6px; background: #2c3e50; }
 
-  .doc-title { text-align: center; margin: 18px 0 4px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #1a3a6e; font-family: Arial, sans-serif; }
-  .doc-subtitle { text-align: center; font-size: 10px; color: #555; margin-bottom: 6px; font-family: Arial, sans-serif; }
+  /* ── Header ─────────────────────────────────────── */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 24px 14px; border-bottom: 1px solid #dee2e6; }
+  .logo-area .company-name { font-size: 20px; font-weight: 900; color: #2c3e50; letter-spacing: 0.5px; }
+  .logo-area .company-sub  { font-size: 8px; color: #7f8c8d; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .doc-info { text-align: right; }
+  .doc-info .doc-label    { font-size: 16px; font-weight: 900; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; }
+  .doc-info .doc-sublabel { font-size: 9px; color: #7f8c8d; margin-top: 2px; }
+  .doc-info .doc-ref      { font-size: 11px; font-weight: 700; color: #2c3e50; margin-top: 4px; }
+  .doc-info .doc-date     { font-size: 9px; color: #7f8c8d; margin-top: 2px; }
+  .doc-info .doc-acte     { font-size: 8px; color: #e67e22; margin-top: 3px; font-style: italic; }
 
-  .acte-banner { background: #fff3cd; border: 2px solid #e6a800; text-align: center; padding: 6px; margin-bottom: 16px; font-family: Arial, sans-serif; font-size: 10px; font-weight: 700; color: #7a5000; letter-spacing: 1px; }
+  /* ── Ref strip ───────────────────────────────────── */
+  .ref-strip { display: flex; gap: 0; border-bottom: 1px solid #dee2e6; background: #f8f9fa; }
+  .ref-cell { flex: 1; padding: 10px 24px; }
+  .ref-cell + .ref-cell { border-left: 1px solid #dee2e6; }
+  .ref-cell .rc-label { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; margin-bottom: 3px; }
+  .ref-cell .rc-value { font-size: 10px; font-weight: 700; color: #2c3e50; }
 
-  .ref-box { display: flex; justify-content: space-between; background: #f0f4ff; border: 1px solid #1a3a6e; border-radius: 4px; padding: 8px 14px; margin-bottom: 18px; font-family: Arial, sans-serif; font-size: 10px; }
-  .ref-box span { font-weight: 700; color: #1a3a6e; }
+  /* ── Section title ───────────────────────────────── */
+  .section-title { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; padding: 12px 24px 6px; }
 
-  .parties-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #1a3a6e; padding-bottom: 5px; margin: 16px 0 10px; font-family: Arial, sans-serif; color: #1a3a6e; }
+  /* ── Party blocks ────────────────────────────────── */
+  .parties { display: flex; gap: 0; border-bottom: 1px solid #dee2e6; }
+  .party-block { flex: 1; padding: 12px 24px; background: #f8f9fa; }
+  .party-block + .party-block { border-left: 1px solid #dee2e6; }
+  .party-label  { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; margin-bottom: 6px; }
+  .party-name   { font-size: 11px; font-weight: 700; color: #2c3e50; margin-bottom: 4px; }
+  .party-detail { font-size: 9px; color: #555; line-height: 1.7; }
 
-  .party-block { border: 1px solid #dde; border-radius: 4px; padding: 10px 14px; margin-bottom: 8px; font-family: Arial, sans-serif; }
-  .party-role { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #1a3a6e; margin-bottom: 5px; border-bottom: 1px dotted #dde; padding-bottom: 4px; }
-  .party-detail { font-size: 10px; line-height: 1.9; }
+  /* ── Vehicle strip ───────────────────────────────── */
+  .vehicle-strip { display: flex; align-items: stretch; border-bottom: 1px solid #dee2e6; }
+  .vehicle-main { flex: 2; padding: 12px 24px; }
+  .vehicle-main .veh-title { font-size: 14px; font-weight: 900; color: #2c3e50; }
+  .vehicle-main .veh-ref   { font-size: 9px; color: #7f8c8d; margin-top: 2px; }
+  .vehicle-specs { flex: 3; display: flex; border-left: 1px solid #dee2e6; }
+  .spec-cell { flex: 1; padding: 12px 14px; border-right: 1px solid #dee2e6; }
+  .spec-cell:last-child { border-right: none; }
+  .spec-cell .spec-label { font-size: 7px; text-transform: uppercase; letter-spacing: 1px; color: #7f8c8d; margin-bottom: 3px; }
+  .spec-cell .spec-value { font-size: 10px; font-weight: 700; color: #2c3e50; }
 
-  .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1a3a6e; margin: 16px 0 8px; border-bottom: 2px solid #1a3a6e; padding-bottom: 5px; font-family: Arial, sans-serif; }
+  /* ── Amounts block ───────────────────────────────── */
+  .amounts-section { padding: 0 24px; margin-top: 14px; }
+  .amounts-grid { display: flex; gap: 12px; }
+  .amount-block { flex: 1; border-radius: 4px; padding: 14px; text-align: center; }
+  .amount-block.total { background: #2c3e50; color: #fff; }
+  .amount-block.pct70 { background: #f8f9fa; border: 1px solid #dee2e6; }
+  .amount-block.pct30 { background: #f8f9fa; border: 1px solid #dee2e6; }
+  .amount-block .ab-label { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
+  .amount-block.total .ab-label { color: #ecf0f1; opacity: 0.8; }
+  .amount-block.pct70 .ab-label, .amount-block.pct30 .ab-label { color: #7f8c8d; }
+  .amount-block .ab-amount { font-size: 15px; font-weight: 900; font-family: 'Courier New', monospace; }
+  .amount-block.total .ab-amount { color: #f39c12; }
+  .amount-block.pct70 .ab-amount, .amount-block.pct30 .ab-amount { color: #2c3e50; }
+  .amount-block .ab-sub { font-size: 8px; margin-top: 4px; font-style: italic; opacity: 0.7; }
 
-  .vehicle-summary { background: #f0f4ff; border: 2px solid #1a3a6e; border-radius: 6px; padding: 12px 16px; margin: 10px 0; font-family: Arial, sans-serif; }
-  .vehicle-summary .veh-title { font-size: 14px; font-weight: 900; color: #1a3a6e; margin-bottom: 6px; }
-  .vehicle-summary .veh-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-  .vehicle-summary .veh-item { font-size: 10px; }
-  .vehicle-summary .veh-item .k { color: #888; }
-  .vehicle-summary .veh-item .v { font-weight: 700; color: #1a1a2e; }
+  /* ── Notaire séquestre box ───────────────────────── */
+  .notaire-wrap { padding: 0 24px; margin-top: 14px; }
+  .notaire-box { border: 1px dashed #2c3e50; border-radius: 4px; padding: 12px 16px; }
+  .notaire-box-title { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #7f8c8d; margin-bottom: 8px; }
+  .notaire-grid { display: flex; gap: 24px; }
+  .notaire-item { flex: 1; }
+  .notaire-item .ni-label { font-size: 7px; text-transform: uppercase; letter-spacing: 1px; color: #7f8c8d; margin-bottom: 2px; }
+  .notaire-item .ni-value { font-size: 10px; font-weight: 700; color: #2c3e50; }
+  .notaire-note { font-size: 8.5px; color: #555; margin-top: 10px; padding-top: 8px; border-top: 1px dotted #dee2e6; font-style: italic; line-height: 1.6; }
 
-  .amounts-grid { display: flex; gap: 10px; margin: 12px 0; font-family: Arial, sans-serif; }
-  .amount-block { flex: 1; border-radius: 6px; padding: 12px; text-align: center; }
-  .amount-block.total { background: #1a3a6e; color: #fff; }
-  .amount-block.pct70 { background: #e8f4e8; border: 1px solid #4caf50; }
-  .amount-block.pct30 { background: #e3f2fd; border: 1px solid #2196f3; }
-  .amount-block .ab-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; opacity: 0.8; }
-  .amount-block .ab-amount { font-size: 14px; font-weight: 900; font-family: 'Courier New', monospace; }
-  .amount-block .ab-sub { font-size: 8px; margin-top: 3px; opacity: 0.7; font-style: italic; }
-  .amount-block.total .ab-amount { color: #ffd700; }
+  /* ── Clauses ─────────────────────────────────────── */
+  .clauses-wrap { padding: 0 24px; }
+  .clause { margin: 9px 0; page-break-inside: avoid; }
+  .clause-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+  .clause-num { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #2c3e50; color: #fff; font-size: 8px; font-weight: 700; flex-shrink: 0; }
+  .clause-title-text { font-weight: 700; font-size: 10px; color: #2c3e50; }
+  .clause-text { font-size: 9.5px; line-height: 1.7; color: #444; text-align: justify; padding-left: 26px; }
 
-  .clause { margin: 10px 0; page-break-inside: avoid; }
-  .clause-num { display: inline-block; background: #1a3a6e; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-bottom: 4px; font-family: Arial, sans-serif; }
-  .clause-title { font-weight: 700; font-size: 10px; color: #1a3a6e; display: inline; font-family: Arial, sans-serif; }
-  .clause-text { font-size: 10px; line-height: 1.7; text-align: justify; margin-top: 3px; }
+  /* ── Signatures ──────────────────────────────────── */
+  .sig-wrap { padding: 14px 24px; border-top: 1px solid #dee2e6; margin-top: 16px; }
+  .sig-intro { font-size: 9px; color: #7f8c8d; margin-bottom: 14px; text-align: center; }
+  .sig-grid { display: flex; gap: 14px; }
+  .sig-item { flex: 1; }
+  .sig-line { border-bottom: 1px solid #555; margin: 34px 0 6px; }
+  .sig-label { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #7f8c8d; }
+  .sig-name  { font-size: 9px; font-weight: 700; color: #2c3e50; margin-top: 2px; }
+  .sig-note  { font-size: 7.5px; color: #aaa; margin-top: 2px; }
 
-  .notaire-box { border: 2px dashed #1a3a6e; border-radius: 6px; padding: 12px; margin: 14px 0; font-family: Arial, sans-serif; }
-  .notaire-box .notaire-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #1a3a6e; margin-bottom: 6px; }
-  .notaire-box table { width: 100%; font-size: 10px; }
-  .notaire-box td { padding: 3px 6px; }
-  .notaire-box td:first-child { color: #888; width: 40%; }
-  .notaire-box td:last-child { font-weight: 700; }
-
-  .sig-section { margin-top: 22px; border-top: 2px solid #1a3a6e; padding-top: 16px; font-family: Arial, sans-serif; }
-  .sig-intro { font-size: 10px; margin-bottom: 14px; text-align: center; color: #555; }
-  .sig-grid { display: flex; gap: 16px; }
-  .sig-item { flex: 1; text-align: center; }
-  .sig-line { border-bottom: 1px solid #555; margin: 40px 0 6px; }
-  .sig-label { font-size: 9px; color: #666; font-weight: 700; text-transform: uppercase; }
-  .sig-name { font-size: 10px; color: #1a1a2e; margin-top: 2px; }
-
-  .footer { margin-top: 16px; padding-top: 10px; border-top: 1px solid #dde; display: flex; justify-content: space-between; font-size: 8px; color: #999; font-family: Arial, sans-serif; }
-
-  p { margin: 6px 0; font-size: 10px; line-height: 1.7; }
+  /* ── Footer bar ──────────────────────────────────── */
+  .footer-bar { background: #2c3e50; color: #ecf0f1; padding: 10px 24px; display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+  .footer-bar span { font-size: 8px; }
+  .footer-bar .sep { opacity: 0.4; }
 </style>
 </head>
 <body>
 <div class="page">
 
+  <div class="top-bar"></div>
+
   <!-- HEADER -->
   <div class="header">
-    <div class="company">DJAZAIR AUTO</div>
-    <div class="tagline">Import automobile Algérie • Véhicules neufs GCC</div>
+    <div class="logo-area">
+      <div class="company-name">DJAZAIR AUTO</div>
+      <div class="company-sub">Import automobile Algérie · Véhicules neufs GCC</div>
+    </div>
+    <div class="doc-info">
+      <div class="doc-label">Reconnaissance de Dette</div>
+      <div class="doc-sublabel">Et Mandat Irrévocable de Paiement Séquestre</div>
+      <div class="doc-ref">N° {d.reference_dossier}</div>
+      <div class="doc-date">Date de l'acte : {d.date_acte}</div>
+      <div class="doc-acte">Acte sous seing privé — À enregistrer chez un notaire</div>
+    </div>
   </div>
 
-  <div class="doc-title">Reconnaissance de Dette</div>
-  <div class="doc-subtitle">Et Mandat Irrévocable de Paiement Séquestre — Notaire</div>
-
-  <div class="acte-banner">ACTE SOUS SEING PRIVÉ — À FAIRE ENREGISTRER AUPRÈS D'UN NOTAIRE</div>
-
-  <div class="ref-box">
-    <div>Dossier : <span>{d.reference_dossier}</span></div>
-    <div>Date de l'acte : <span>{d.date_acte}</span></div>
-    <div>Notaire : <span>Me. {d.nom_notaire}</span></div>
+  <!-- REF STRIP -->
+  <div class="ref-strip">
+    <div class="ref-cell">
+      <div class="rc-label">Dossier</div>
+      <div class="rc-value">{d.reference_dossier}</div>
+    </div>
+    <div class="ref-cell">
+      <div class="rc-label">Date de l'acte</div>
+      <div class="rc-value">{d.date_acte}</div>
+    </div>
+    <div class="ref-cell">
+      <div class="rc-label">Notaire séquestre</div>
+      <div class="rc-value">Me. {d.nom_notaire}</div>
+    </div>
+    <div class="ref-cell">
+      <div class="rc-label">Taux de conversion</div>
+      <div class="rc-value">{d.taux_conversion} DA/USD</div>
+    </div>
   </div>
 
   <!-- PARTIES -->
-  <div class="parties-title">Entre les soussignés</div>
-
-  <div class="party-block">
-    <div class="party-role">Le Débiteur — L'Acheteur</div>
-    <div class="party-detail">
-      <strong>{d.prenom_acheteur} {d.nom_acheteur}</strong>, né(e) le <strong>{d.date_naissance}</strong>,<br>
-      porteur de la pièce d'identité n° <strong>{d.numero_piece}</strong>,<br>
-      demeurant à : {d.adresse}, {d.commune}, wilaya de {d.wilaya}.<br>
-      Téléphone WhatsApp : {d.telephone_acheteur}
+  <div class="section-title">Entre les soussignés</div>
+  <div class="parties" style="border-top: 1px solid #dee2e6;">
+    <div class="party-block">
+      <div class="party-label">Le Débiteur — L'Acheteur</div>
+      <div class="party-name">{d.prenom_acheteur} {d.nom_acheteur}</div>
+      <div class="party-detail">
+        Né(e) le {d.date_naissance} — Pièce n° {d.numero_piece}<br>
+        {d.adresse}, {d.commune}, wilaya de {d.wilaya}<br>
+        WhatsApp : {d.telephone_acheteur}
+      </div>
+    </div>
+    <div class="party-block">
+      <div class="party-label">Le Créancier — Le Sourceur</div>
+      <div class="party-name">{d.nom_sourceur}</div>
+      <div class="party-detail">
+        Établi(e) en {d.pays_sourceur}<br>
+        {d.adresse_sourceur}<br>
+        Réf. partenariat : {d.reference_contrat_sourceur}
+      </div>
+    </div>
+    <div class="party-block">
+      <div class="party-label">L'Intermédiaire & Garant</div>
+      <div class="party-name">DJAZAIR AUTO SARL</div>
+      <div class="party-detail">
+        SARL — RC n° ____________<br>
+        Siège social : Alger, Algérie<br>
+        Représentée par son gérant légalement habilité
+      </div>
     </div>
   </div>
 
-  <div class="party-block">
-    <div class="party-role">Le Créancier — Le Sourceur</div>
-    <div class="party-detail">
-      <strong>{d.nom_sourceur}</strong>, établi(e) en <strong>{d.pays_sourceur}</strong>,<br>
-      adresse professionnelle : {d.adresse_sourceur}.<br>
-      Référence contrat partenariat Djazair Auto : {d.reference_contrat_sourceur}
+  <!-- VEHICLE STRIP -->
+  <div class="section-title" style="margin-top:12px;">Véhicule objet de la reconnaissance de dette</div>
+  <div class="vehicle-strip" style="border-top: 1px solid #dee2e6;">
+    <div class="vehicle-main">
+      <div class="veh-title">{d.marque} {d.modele} — {d.finition}</div>
+      <div class="veh-ref">Réf. {d.reference_variante} · Port : {d.port_embarquement}</div>
     </div>
-  </div>
-
-  <div class="party-block">
-    <div class="party-role">L'Intermédiaire & Garant — Djazair Auto</div>
-    <div class="party-detail">
-      <strong>DJAZAIR AUTO SARL</strong>, société à responsabilité limitée, RC n° ____________,<br>
-      siège social : Alger, Algérie. Représentée par son gérant légalement habilité.
-    </div>
-  </div>
-
-  <!-- VEHICLE -->
-  <div class="section-title">Objet de la reconnaissance de dette</div>
-  <p>L'Acheteur reconnaît devoir au Sourceur, par l'intermédiaire de Djazair Auto, les sommes définies ci-dessous correspondant à l'acquisition et l'importation en Algérie du véhicule suivant :</p>
-
-  <div class="vehicle-summary">
-    <div class="veh-title">{d.marque} {d.modele} — {d.finition} ({d.reference_variante})</div>
-    <div class="veh-grid">
-      <div class="veh-item"><span class="k">Année :</span> <span class="v">{d.annee}</span></div>
-      <div class="veh-item"><span class="k">Boîte :</span> <span class="v">{d.boite_vitesse}</span></div>
-      <div class="veh-item"><span class="k">Couleur :</span> <span class="v">{d.couleur_1}</span></div>
-      <div class="veh-item"><span class="k">Origine :</span> <span class="v">{d.pays_origine_vehicule}</span></div>
-      <div class="veh-item"><span class="k">Fabrication :</span> <span class="v">{d.pays_fabrication}</span></div>
-      <div class="veh-item"><span class="k">Port :</span> <span class="v">{d.port_embarquement}</span></div>
+    <div class="vehicle-specs">
+      <div class="spec-cell">
+        <div class="spec-label">Année</div>
+        <div class="spec-value">{d.annee}</div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Boîte</div>
+        <div class="spec-value">{d.boite_vitesse}</div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Couleur</div>
+        <div class="spec-value">{d.couleur_1}</div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Origine</div>
+        <div class="spec-value">{d.pays_origine_vehicule}</div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Fabrication</div>
+        <div class="spec-value">{d.pays_fabrication}</div>
+      </div>
     </div>
   </div>
 
   <!-- AMOUNTS -->
-  <div class="section-title">Montants et échéancier</div>
-  <div class="amounts-grid">
-    <div class="amount-block total">
-      <div class="ab-label">Montant total dû</div>
-      <div class="ab-amount">{d.montant_total} DA</div>
-      <div class="ab-sub">Prix tout compris livré port d'Alger</div>
-    </div>
-    <div class="amount-block pct70">
-      <div class="ab-label">1er versement — 70%</div>
-      <div class="ab-amount">{d.montant_70} DA</div>
-      <div class="ab-sub">Sur validation documents embarquement</div>
-    </div>
-    <div class="amount-block pct30">
-      <div class="ab-label">Solde — 30%</div>
-      <div class="ab-amount">{d.montant_30} DA</div>
-      <div class="ab-sub">Sur arrivée navire port d'Alger</div>
+  <div class="section-title" style="margin-top:12px;">Montants et échéancier</div>
+  <div class="amounts-section" style="margin-top:0;">
+    <div class="amounts-grid">
+      <div class="amount-block total">
+        <div class="ab-label">Montant total dû</div>
+        <div class="ab-amount">{d.montant_total} DA</div>
+        <div class="ab-sub">Prix tout compris livré port d'Alger</div>
+      </div>
+      <div class="amount-block pct70">
+        <div class="ab-label">1er versement — 70%</div>
+        <div class="ab-amount">{d.montant_70} DA</div>
+        <div class="ab-sub">Sur validation documents embarquement</div>
+      </div>
+      <div class="amount-block pct30">
+        <div class="ab-label">Solde — 30%</div>
+        <div class="ab-amount">{d.montant_30} DA</div>
+        <div class="ab-sub">Sur arrivée navire port d'Alger</div>
+      </div>
     </div>
   </div>
 
   <!-- NOTAIRE SEQUESTRE -->
-  <div class="notaire-box">
-    <div class="notaire-title">Notaire séquestre désigné</div>
-    <table>
-      <tr><td>Nom</td><td>Me. {d.nom_notaire}</td></tr>
-      <tr><td>Adresse de l'étude</td><td>{d.adresse_etude}</td></tr>
-      <tr><td>Ville / Zone</td><td>{d.ville_notaire}</td></tr>
-    </table>
-    <p style="margin-top:8px; font-size:9px; color:#555; font-style:italic;">
-      L'intégralité des fonds sera déposée en séquestre chez le notaire désigné dès la signature du présent acte.
-      Le notaire est mandaté irrévocablement pour libérer les fonds selon les conditions strictement définies aux clauses ci-après.
-    </p>
+  <div class="notaire-wrap">
+    <div class="notaire-box">
+      <div class="notaire-box-title">Notaire séquestre désigné</div>
+      <div class="notaire-grid">
+        <div class="notaire-item">
+          <div class="ni-label">Nom</div>
+          <div class="ni-value">Me. {d.nom_notaire}</div>
+        </div>
+        <div class="notaire-item">
+          <div class="ni-label">Adresse de l'étude</div>
+          <div class="ni-value">{d.adresse_etude}</div>
+        </div>
+        <div class="notaire-item">
+          <div class="ni-label">Ville / Zone</div>
+          <div class="ni-value">{d.ville_notaire}</div>
+        </div>
+      </div>
+      <div class="notaire-note">
+        L'intégralité des fonds sera déposée en séquestre chez le notaire désigné dès la signature du présent acte.
+        Le notaire est mandaté irrévocablement pour libérer les fonds selon les conditions strictement définies aux clauses ci-après.
+      </div>
+    </div>
   </div>
 
   <!-- CLAUSES -->
-  <div class="section-title">Clauses et conditions</div>
+  <div class="section-title" style="margin-top:14px;">Clauses et conditions</div>
+  <div class="clauses-wrap">
 
-  <div class="clause">
-    <span class="clause-num">1</span> <span class="clause-title">Engagement irrévocable du débiteur</span>
-    <div class="clause-text">L'Acheteur s'engage irrévocablement à régler les sommes dues selon l'échéancier défini ci-dessus. Les fonds sont déposés en séquestre chez le notaire dès la signature du présent acte et ne peuvent être retirés que dans les conditions prévues aux clauses suivantes.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">1</span>
+        <span class="clause-title-text">Engagement irrévocable du débiteur</span>
+      </div>
+      <div class="clause-text">L'Acheteur s'engage irrévocablement à régler les sommes dues selon l'échéancier défini ci-dessus. Les fonds sont déposés en séquestre chez le notaire dès la signature du présent acte et ne peuvent être retirés que dans les conditions prévues aux clauses suivantes.</div>
+    </div>
 
-  <div class="clause">
-    <span class="clause-num">2</span> <span class="clause-title">Libération du versement 70%</span>
-    <div class="clause-text">Le premier versement de <strong>{d.montant_70} DA</strong> sera libéré par le notaire au profit du Sourceur, sur instruction de Djazair Auto, dès réception et validation des 5 documents suivants : (1) facture d'achat originale, (2) carte grise du pays d'origine avec VIN correspondant, (3) Bill of Lading (connaissement maritime), (4) certificat d'assurance maritime, (5) minimum 5 photos du véhicule avec numéro VIN visible.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">2</span>
+        <span class="clause-title-text">Libération du versement 70%</span>
+      </div>
+      <div class="clause-text">Le premier versement de <strong>{d.montant_70} DA</strong> sera libéré par le notaire au profit du Sourceur, sur instruction de Djazair Auto, dès réception et validation des 5 documents : (1) facture d'achat originale, (2) carte grise du pays d'origine avec VIN correspondant, (3) Bill of Lading, (4) certificat d'assurance maritime, (5) minimum 5 photos du véhicule avec numéro VIN visible.</div>
+    </div>
 
-  <div class="clause">
-    <span class="clause-num">3</span> <span class="clause-title">Libération du solde 30%</span>
-    <div class="clause-text">Le solde de <strong>{d.montant_30} DA</strong> sera libéré par le notaire au profit du Sourceur, sur instruction de Djazair Auto, dès confirmation par le système de suivi maritime de l'arrivée du navire dans la zone portuaire d'Alger.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">3</span>
+        <span class="clause-title-text">Libération du solde 30%</span>
+      </div>
+      <div class="clause-text">Le solde de <strong>{d.montant_30} DA</strong> sera libéré par le notaire au profit du Sourceur, sur instruction de Djazair Auto, dès confirmation par le système de suivi maritime de l'arrivée du navire dans la zone portuaire d'Alger.</div>
+    </div>
 
-  <div class="clause">
-    <span class="clause-num">4</span> <span class="clause-title">Cas de non-livraison</span>
-    <div class="clause-text">En cas de non-livraison du véhicule imputable au Sourceur dans un délai de 120 jours à compter de la date du présent acte, le notaire procédera au remboursement intégral de l'Acheteur, déduction faite des seuls frais notariaux. Djazair Auto se réserve tout recours contre le Sourceur défaillant.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">4</span>
+        <span class="clause-title-text">Cas de non-livraison</span>
+      </div>
+      <div class="clause-text">En cas de non-livraison du véhicule imputable au Sourceur dans un délai de 120 jours à compter de la date du présent acte, le notaire procédera au remboursement intégral de l'Acheteur, déduction faite des seuls frais notariaux. Djazair Auto se réserve tout recours contre le Sourceur défaillant.</div>
+    </div>
 
-  <div class="clause">
-    <span class="clause-num">5</span> <span class="clause-title">Clause de substitution du véhicule</span>
-    <div class="clause-text">En cas d'indisponibilité du véhicule commandé après confirmation de commande, Djazair Auto pourra, avec l'accord préalable et écrit de l'Acheteur, proposer un véhicule de caractéristiques équivalentes ou supérieures sans surcoût pour ce dernier.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">5</span>
+        <span class="clause-title-text">Clause de substitution du véhicule</span>
+      </div>
+      <div class="clause-text">En cas d'indisponibilité du véhicule commandé après confirmation de commande, Djazair Auto pourra, avec l'accord préalable et écrit de l'Acheteur, proposer un véhicule de caractéristiques équivalentes ou supérieures sans surcoût pour ce dernier.</div>
+    </div>
 
-  <div class="clause">
-    <span class="clause-num">6</span> <span class="clause-title">Pénalités de retard documents</span>
-    <div class="clause-text">Passé un délai de 10 jours ouvrables à compter de la confirmation de commande sans réception des documents d'embarquement complets, des pénalités de retard de 10 000 DA par jour seront automatiquement déduites du versement dû au Sourceur, dans la limite de 30 jours.</div>
-  </div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">6</span>
+        <span class="clause-title-text">Pénalités de retard documents</span>
+      </div>
+      <div class="clause-text">Passé un délai de 10 jours ouvrables à compter de la confirmation de commande sans réception des documents d'embarquement complets, des pénalités de retard de 10 000 DA par jour seront automatiquement déduites du versement dû au Sourceur, dans la limite de 30 jours.</div>
+    </div>
 
-  <div class="clause">
-    <span class="clause-num">7</span> <span class="clause-title">Non-conformité du véhicule livré</span>
-    <div class="clause-text">Si le véhicule livré ne correspond pas aux caractéristiques contractuelles (modèle, finition, année), Djazair Auto s'engage à corriger la situation dans un délai de 30 jours ou à procéder au remboursement intégral des sommes versées par l'Acheteur, à l'exclusion de tout autre préjudice.</div>
+    <div class="clause">
+      <div class="clause-header">
+        <span class="clause-num">7</span>
+        <span class="clause-title-text">Non-conformité du véhicule livré</span>
+      </div>
+      <div class="clause-text">Si le véhicule livré ne correspond pas aux caractéristiques contractuelles (modèle, finition, année), Djazair Auto s'engage à corriger la situation dans un délai de 30 jours ou à procéder au remboursement intégral des sommes versées par l'Acheteur, à l'exclusion de tout autre préjudice.</div>
+    </div>
+
   </div>
 
   <!-- SIGNATURES -->
-  <div class="sig-section">
+  <div class="sig-wrap">
     <div class="sig-intro">Fait en quatre (4) exemplaires originaux à _____________, le {d.date_acte}</div>
     <div class="sig-grid">
       <div class="sig-item">
         <div class="sig-line"></div>
         <div class="sig-label">L'Acheteur (Débiteur)</div>
         <div class="sig-name">{d.prenom_acheteur} {d.nom_acheteur}</div>
-        <div style="font-size:8px; color:#aaa; margin-top:3px; font-family:Arial,sans-serif;">Précéder d'un « Lu et approuvé »</div>
+        <div class="sig-note">Précéder d'un « Lu et approuvé »</div>
       </div>
       <div class="sig-item">
         <div class="sig-line"></div>
@@ -235,10 +339,13 @@
     </div>
   </div>
 
-  <div class="footer">
-    <span>Djazair Auto — Import automobile Algérie</span>
+  <!-- FOOTER -->
+  <div class="footer-bar">
+    <span>DJAZAIR AUTO — Import automobile Algérie</span>
+    <span class="sep">|</span>
     <span>contact@djazairauto.com</span>
-    <span>Dossier {d.reference_dossier} — {d.date_acte}</span>
+    <span class="sep">|</span>
+    <span>Réf. {d.reference_dossier} · {d.date_acte}</span>
   </div>
 
 </div>
