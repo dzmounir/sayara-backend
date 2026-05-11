@@ -487,6 +487,83 @@ app.post('/api/cron/port-arrive', async (req, res) => {
   }
 });
 
+// ─── Diagnostic complet ───────────────────────────────────────────────────────
+app.get('/diagnostic', async (req, res) => {
+  const AT_BASE = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`;
+  const TBL_PRIX = process.env.AIRTABLE_PRIX_SOURCEURS_TABLE || 'tblkosDM1HA6SbW0V';
+  const out = {};
+
+  // 1 — Variables d'environnement
+  out.env = {
+    AIRTABLE_API_KEY:    AIRTABLE_API_KEY  ? '✅' : '❌ MISSING',
+    AIRTABLE_BASE_ID:    AIRTABLE_BASE_ID  ? '✅' : '❌ MISSING',
+    ANTHROPIC_API_KEY:   process.env.ANTHROPIC_API_KEY   ? '✅' : '❌ MISSING',
+    WHATSAPP_ACCESS_TOKEN: process.env.WHATSAPP_ACCESS_TOKEN ? '✅' : '❌ MISSING',
+    AIRTABLE_PRIX_SOURCEURS_TABLE: process.env.AIRTABLE_PRIX_SOURCEURS_TABLE || `(défaut: ${TBL_PRIX})`,
+  };
+
+  // 2 — Connexion Airtable PRIX_SOURCEURS (sans filtre)
+  try {
+    const r = await fetch(`${AT_BASE}/${TBL_PRIX}?maxRecords=3`, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
+    if (!r.ok) throw new Error(`HTTP ${r.status}: ${await r.text()}`);
+    const d = await r.json();
+    const recs = d.records ?? [];
+    out.airtable_prix_sourceurs = {
+      ok: true,
+      nb_records_sample: recs.length,
+      champs: recs[0] ? Object.keys(recs[0].fields) : [],
+      exemple: recs[0]?.fields,
+    };
+  } catch (e) { out.airtable_prix_sourceurs = { ok: false, erreur: e.message }; }
+
+  // 3 — Connexion Claude Haiku
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 30, messages: [{ role: 'user', content: 'ping' }] }),
+      signal: AbortSignal.timeout(10000),
+    });
+    const d = await r.json();
+    out.haiku = { ok: r.ok, status: r.status, reponse: d.content?.[0]?.text };
+  } catch (e) { out.haiku = { ok: false, erreur: e.message }; }
+
+  // 4 — Recherche stock disponible (filtre actuel du bot)
+  try {
+    const filter = encodeURIComponent('{stock_disponible}>0');
+    const r = await fetch(`${AT_BASE}/${TBL_PRIX}?filterByFormula=${filter}&maxRecords=5`, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
+    if (!r.ok) throw new Error(`HTTP ${r.status}: ${await r.text()}`);
+    const d = await r.json();
+    const recs = d.records ?? [];
+    out.recherche_stock = {
+      ok: true,
+      filtre: '{stock_disponible}>0',
+      nb_resultats: recs.length,
+      vehicules: recs.map(r => ({ marque: r.fields.marque, modele: r.fields.modele, annee: r.fields.annee, stock: r.fields.stock_disponible, actif: r.fields.actif })),
+    };
+  } catch (e) { out.recherche_stock = { ok: false, erreur: e.message }; }
+
+  // 5 — Simulation recherche par marque/modele (paramètres ?marque=Dacia&modele=Duster)
+  const testMarque = req.query.marque;
+  const testModele = req.query.modele;
+  if (testMarque && testModele) {
+    try {
+      const filter = encodeURIComponent(`AND({stock_disponible}>0,{marque}="${testMarque}",{modele}="${testModele}")`);
+      const r = await fetch(`${AT_BASE}/${TBL_PRIX}?filterByFormula=${filter}&maxRecords=10`, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${await r.text()}`);
+      const d = await r.json();
+      const recs = d.records ?? [];
+      out[`recherche_${testMarque}_${testModele}`] = {
+        ok: true,
+        nb_resultats: recs.length,
+        vehicules: recs.map(r => ({ marque: r.fields.marque, modele: r.fields.modele, annee: r.fields.annee, finition: r.fields.finition, stock: r.fields.stock_disponible, actif: r.fields.actif })),
+      };
+    } catch (e) { out[`recherche_${testMarque}_${testModele}`] = { ok: false, erreur: e.message }; }
+  }
+
+  res.json(out);
+});
+
 // ─── Debug endpoint — routing diagnosis ───────────────────────────────────────
 app.get('/api/debug/routing', async (req, res) => {
   const phone = String(req.query.phone || '').trim();
@@ -515,6 +592,12 @@ app.get('/api/debug/routing', async (req, res) => {
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'sayara-backend', ts: new Date().toISOString() });
+});
+
+// ─── Startup env check ───────────────────────────────────────────────────────
+['AIRTABLE_API_KEY', 'AIRTABLE_BASE_ID', 'ANTHROPIC_API_KEY', 'WHATSAPP_ACCESS_TOKEN'].forEach(k => {
+  if (!process.env[k]) console.error(`[STARTUP] ❌ Variable manquante: ${k}`);
+  else                 console.log(`[STARTUP] ✅ ${k}`);
 });
 
 app.listen(PORT, () => {
