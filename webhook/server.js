@@ -87,6 +87,11 @@ app.get('/webhook', (req, res) => {
 app.post('/webhook', async (req, res) => {
   res.sendStatus(200); // ack immediately (Meta requires < 5s)
 
+  if (process.env.BOT_DISABLED === 'true') {
+    console.log('[BOT_DISABLED] message ignored');
+    return;
+  }
+
   try {
     const entry   = req.body?.entry?.[0];
     const change  = entry?.changes?.[0];
